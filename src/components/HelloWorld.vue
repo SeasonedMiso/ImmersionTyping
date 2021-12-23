@@ -28,9 +28,12 @@
 
 <script lang="ts">
 import Vue from "vue";
-const allSentences = require("../sentences.json");
+// const allSentences = require("../sentences.json");
+const allSentences = require("../slowsentences.json");
 const textCursors = ["|", " "];
-
+let acceptableChars = Array.from(new Array(26), (x, i) => i + 65)
+  .concat(Array.from(new Array(9), (x, i) => i + 49))
+  .concat(40);
 export default {
   name: "HelloWorld",
 
@@ -62,6 +65,22 @@ export default {
     window.addEventListener(
       "keydown",
       function (e) {
+        if (e.ctrlKey || e.shiftKey || e.metaKey) {
+          var c = e.which || e.keyCode; // get key code
+          switch (c) {
+            case 83: //block Ctrl+S
+              e.preventDefault();
+              break;
+            case 82: //block Ctrl+R
+              e.preventDefault();
+              break;
+            case 55: //block '
+              e.preventDefault();
+              this.addCharToMsg("'");
+              break;
+          }
+        }
+        console.log(String.fromCharCode(e.keyCode));
         if (this.typingSoundBool) {
           this.randomClick();
         }
@@ -70,19 +89,11 @@ export default {
           this.msg = this.msg.slice(0, -1);
           if (this.wordPosIndex > 0) this.wordPosIndex--;
         }
-        //char keys
-        if (64 < e.keyCode && e.keyCode < 91) {
+        //normal chars
+
+        if (acceptableChars.includes(e.keyCode)) {
           let inputtedChar = String.fromCharCode(e.keyCode);
-          if (this.wordPosIndex < this.words[this.counter].length) {
-            this.mistype = !(
-              this.words[this.counter][this.wordPosIndex].toLowerCase() ==
-              inputtedChar.toLowerCase()
-            );
-            if (!this.mistype) {
-              this.msg += inputtedChar;
-              this.wordPosIndex++;
-            }
-          }
+          this.addCharToMsg(inputtedChar);
         }
         //space
         if (e.keyCode === 32) {
@@ -93,6 +104,18 @@ export default {
   },
 
   methods: {
+    addCharToMsg(inputtedChar) {
+      if (this.wordPosIndex < this.words[this.counter].length) {
+        this.mistype = !(
+          this.words[this.counter][this.wordPosIndex].toLowerCase() ==
+          inputtedChar.toLowerCase()
+        );
+        if (!this.mistype) {
+          this.msg += inputtedChar;
+          this.wordPosIndex++;
+        }
+      }
+    },
     getSentence() {
       return allSentences[Math.floor(Math.random() * allSentences.length)];
     },

@@ -35,6 +35,6 @@
 -----------------
 -implement cpm
 -volume up down and mute
--handle ' and other symbols
+-handle ' being hotkey in firefox
 -stop recording wpm if not active tab etc
 -record incorrect keystrokes
