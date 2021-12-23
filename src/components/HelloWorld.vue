@@ -14,10 +14,8 @@
       ><span class="currentWordEnd"
         >{{ currentWord.substring(wordPosIndex, currentWord.length) }}
       </span>
-
       <span class="notYetTyped">{{ notYetTyped }}</span>
       <br />
-
       <span class="blurrySentences" style="white-space: pre">{{
         blurrySentences
       }}</span>
@@ -30,11 +28,12 @@
 
 <script lang="ts">
 import Vue from "vue";
-
 const allSentences = require("../sentences.json");
 const textCursors = ["|", " "];
+
 export default {
   name: "HelloWorld",
+
   data() {
     return {
       typingSoundBool: false,
@@ -58,6 +57,7 @@ export default {
       cpm: 0,
     };
   },
+
   mounted() {
     window.addEventListener(
       "keydown",
@@ -65,10 +65,12 @@ export default {
         if (this.typingSoundBool) {
           this.randomClick();
         }
+        //backspace
         if (e.keyCode == 8) {
           this.msg = this.msg.slice(0, -1);
           if (this.wordPosIndex > 0) this.wordPosIndex--;
         }
+        //char keys
         if (64 < e.keyCode && e.keyCode < 91) {
           let inputtedChar = String.fromCharCode(e.keyCode);
           if (this.wordPosIndex < this.words[this.counter].length) {
@@ -82,21 +84,31 @@ export default {
             }
           }
         }
+        //space
         if (e.keyCode === 32) {
           this.update();
         }
       }.bind(this)
     );
   },
+
   methods: {
     getSentence() {
       return allSentences[Math.floor(Math.random() * allSentences.length)];
     },
+
     clear() {
       this.msg = null;
     },
+
     initialize() {
       this.counter = 0;
+      this.msg = "";
+      this.typed = "";
+      this.startTime = 0;
+      this.endTime = 0;
+      this.firstCycle = false;
+
       while (this.sentenceStock.length < 5) {
         let tempSentence = this.getSentence();
         if (
@@ -113,35 +125,34 @@ export default {
         .splice(1, this.sentence.length)
         .join(" ");
       this.words = this.sentence.split(" ");
-      this.nextWord = "next:" + this.words[this.counter];
-      this.firstCycle = false;
-      this.msg = "";
-      this.typed = "";
-      this.update();
-      this.startTime = 0;
-      this.endTime = 0;
       this.currentWord = this.sentence.split(" ")[0];
     },
+
     update() {
+      //init
       this.wordPosIndex = 0;
       let words = this.sentence.split(" ");
+
       if (this.startTime == 0) {
         this.startTime = new Date().getTime();
       }
+
       if (
         !this.firstCycle &&
         this.msg.replace(/\s+/g, "").toLowerCase() ===
           words[this.counter].toLowerCase()
       ) {
-        this.nextWord = "next:" + words[this.counter + 1];
         this.msg = this.msg.replace(/\s+/g, "");
         this.typed += words[this.counter] + " ";
         this.notYetTyped = this.notYetTyped
           .split(" ")
           .splice(1, this.sentence.split(" ").length)
           .join(" ");
+
         this.counter += 1;
         this.currentWord = this.sentence.split(" ")[this.counter];
+
+        //reach end of sentence
         if (this.counter >= words.length) {
           this.endTime = new Date().getTime();
           words.length;
@@ -155,15 +166,18 @@ export default {
           this.counter = 0;
         }
       }
+
       this.msg = "";
       if (this.firstCycle) {
         this.initialize();
       }
     },
+
     rain() {
       const rain = new Audio(require("@/assets/sounds/rain.mp3"));
       rain.play();
     },
+
     randomClick() {
       const audio0 = new Audio(
         require("@/assets/sounds/Keyboard-Button-Click-00-c-FesliyanStudios.com-glued.wav")
@@ -239,9 +253,9 @@ a {
 .typed {
   color: rgb(90, 90, 90);
 }
-.notyet {
-  /* color: rgb(202, 39, 39); */
-}
+/* .notyet {
+  color: rgb(202, 39, 39);
+} */
 .button {
   font-family: "Font Awesome 5 Free", sans-serif;
   font-weight: 900; /* Needed for font awesome to work... */
@@ -257,6 +271,6 @@ a {
 .typing {
   color: rgb(133, 169, 219);
 }
-.textCursor {
-}
+/* .textCursor {
+} */
 </style>
