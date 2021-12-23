@@ -33,8 +33,10 @@
 //optional rain sounds, white noise, keyboard sounds
 
 -----------------
--set timer start time to be the first key stroke after init, not init
+
 - implement per character colors
-- fetch random sentences and show next sentence blurrily below current
--implement wpm and cpm
+-implement cpm
 -volume up down and mute
+-handle '
+-stop recording wpm if not active tab etc
+-record incorrect keystrokes

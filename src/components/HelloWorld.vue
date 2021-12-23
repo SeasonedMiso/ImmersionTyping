@@ -1,50 +1,45 @@
 <template>
   <div class="test-text">
-    <span class="sentence">
-      <!-- <font-awesome-icon :icon="['fab', 'font-awesome']" /> -->
-      <span class="typed">{{ typed }}</span>
-      <span class="notYetTyped">{{ notYetTyped }}</span>
-      <font-awesome-icon icon="faVolumeDown" />
-      <i class="fas fa-volume-down"></i>
-    </span>
-    <br />
-    <p>press space to start</p>
     <p>
       <span class="wpm">wpm: {{ wpm }}</span>
     </p>
+    <span class="sentence">
+      <span class="typed">{{ typed }}</span>
+      <span class="notYetTyped">{{ notYetTyped }}</span>
+      <br />
+
+      <span class="blurrySentences" style="white-space: pre">{{
+        blurrySentences
+      }}</span>
+    </span>
+
+    <br />
+    <p v-if="firstCycle">press space to start</p>
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import Vue from "vue";
-
-// import fontawesome from "@fortawesome/fontawesome";
-// import brands from "@fortawesome/fontawesome-free-brands";
-// // import 1 icon if you just need this one. Otherwise you can import the whole module
-// import faSpinner from "@fortawesome/fontawesome-free-solid/faSpinner";
-// import FontAwesomeIcon from "@fortawesome/vue-fontawesome";
-
-import { library } from "@fortawesome/fontawesome-svg-core";
-import { faFontAwesome } from "@fortawesome/free-brands-svg-icons";
-// import faVolumeDown from "@fortawesome/free-solid-svg-icons/faVolumeDown";
-// import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-
-library.add(faFontAwesome);
+let allSentences = require("raw-loader!@/assets/sentences.txt").default.split(
+  "\n"
+);
 
 export default {
   name: "HelloWorld",
   data() {
     return {
-      typingSoundBool: true,
+      typingSoundBool: false,
       msg: "",
       typed: "",
       notYetTyped: "",
-      sentence: "The quick brown fox",
+      sentence: "",
+      sentenceStock: [],
+      blurrySentences: "",
       onScreen: "",
       nextWord: "",
       lastWord: "",
-      startTime: null,
-      endTime: null,
+      startTime: 0,
+      endTime: 0,
       counter: 0,
       firstCycle: true,
       wpm: 0,
@@ -71,6 +66,9 @@ export default {
     );
   },
   methods: {
+    getSentence() {
+      return allSentences[Math.floor(Math.random() * allSentences.length)];
+    },
     rain() {
       const rain = new Audio(require("@/assets/sounds/rain.mp3"));
       rain.play();
@@ -117,18 +115,35 @@ export default {
       this.msg = null;
     },
     initialize() {
+      this.counter = 0;
+      while (this.sentenceStock.length < 5) {
+        let tempSentence = this.getSentence();
+        console.log(tempSentence);
+        if (
+          tempSentence != this.sentenceStock[this.sentenceStock.length - 1] ||
+          this.sentenceStock.length == 0
+        ) {
+          this.sentenceStock.push(tempSentence);
+        }
+      }
+      this.sentence = this.sentenceStock.shift();
+      this.blurrySentences = this.sentenceStock.join("\n");
+      console.log(this.sentenceStock);
       this.notYetTyped = this.sentence;
       let words = this.sentence.split(" ");
       this.nextWord = "next:" + words[this.counter];
       this.firstCycle = false;
       this.msg = "";
+      this.typed = "";
       this.update();
-      this.startTime = new Date().getTime();
+      this.notYetTyped = this.sentence;
+      this.startTime = 0;
+      this.endTime = 0;
     },
     update() {
       let words = this.sentence.split(" ");
-      if (this.firstCycle) {
-        this.initialize();
+      if (this.startTime == 0) {
+        this.startTime = new Date().getTime();
       }
       if (
         !this.firstCycle &&
@@ -144,12 +159,7 @@ export default {
           .join(" ");
         this.counter += 1;
         if (this.counter >= words.length) {
-          this.counter = 0;
-          this.notYetTyped = this.sentence;
-          this.typed = "";
           this.endTime = new Date().getTime();
-          //check for rounding
-          //covert minutes and seconds to minute decimal
           words.length;
           this.wpm = (
             Math.round(
@@ -157,10 +167,14 @@ export default {
                 10
             ) / 10
           ).toFixed(1);
-          console.log(words.length);
+          this.initialize();
+          this.counter = 0;
         }
       }
       this.msg = "";
+      if (this.firstCycle) {
+        this.initialize();
+      }
     },
   },
 };
@@ -192,11 +206,7 @@ li {
 a {
   color: #42b983;
 }
-.mainIn {
-  color: rgb(32, 41, 41);
-  font-size: 100%;
-  /* visibility:hidden; */
-}
+
 .sentence {
   font-size: 150%;
   color: rgb(185, 185, 185);
@@ -210,5 +220,9 @@ a {
 .button {
   font-family: "Font Awesome 5 Free", sans-serif;
   font-weight: 900; /* Needed for font awesome to work... */
+}
+.blurrySentences {
+  color: transparent;
+  text-shadow: 0 0 4px rgb(185, 185, 185);
 }
 </style>
