@@ -33,10 +33,8 @@
 //optional rain sounds, white noise, keyboard sounds
 
 -----------------
-
-- implement per character colors
 -implement cpm
 -volume up down and mute
--handle '
+-handle ' and other symbols
 -stop recording wpm if not active tab etc
 -record incorrect keystrokes

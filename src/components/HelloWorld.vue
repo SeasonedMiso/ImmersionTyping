@@ -3,8 +3,18 @@
     <p>
       <span class="wpm">wpm: {{ wpm }}</span>
     </p>
-    <span class="sentence">
-      <span class="typed">{{ typed }}</span>
+    <span v-if="!firstCycle" class="sentence"
+      ><span class="typed semiBlur">{{ typed }}</span
+      ><span class="currentWordStart typing">{{
+        currentWord.substring(0, wordPosIndex)
+      }}</span>
+      <span class="textCursor" content="tempCont"
+        ><span v-if="mistype" style="color: red">{{ textCursor }}</span
+        ><span v-else style="color: black">{{ textCursor }}</span></span
+      ><span class="currentWordEnd"
+        >{{ currentWord.substring(wordPosIndex, currentWord.length) }}
+      </span>
+
       <span class="notYetTyped">{{ notYetTyped }}</span>
       <br />
 
@@ -20,10 +30,9 @@
 
 <script lang="ts">
 import Vue from "vue";
-let allSentences = require("raw-loader!@/assets/sentences.txt").default.split(
-  "\n"
-);
 
+const allSentences = require("../sentences.json");
+const textCursors = ["|", " "];
 export default {
   name: "HelloWorld",
   data() {
@@ -36,8 +45,11 @@ export default {
       sentenceStock: [],
       blurrySentences: "",
       onScreen: "",
-      nextWord: "",
-      lastWord: "",
+      currentWord: "",
+      wordPosIndex: 0,
+      mistype: false,
+      words: "",
+      textCursor: textCursors[0],
       startTime: 0,
       endTime: 0,
       counter: 0,
@@ -55,9 +67,20 @@ export default {
         }
         if (e.keyCode == 8) {
           this.msg = this.msg.slice(0, -1);
+          if (this.wordPosIndex > 0) this.wordPosIndex--;
         }
         if (64 < e.keyCode && e.keyCode < 91) {
-          this.msg += String.fromCharCode(e.keyCode);
+          let inputtedChar = String.fromCharCode(e.keyCode);
+          if (this.wordPosIndex < this.words[this.counter].length) {
+            this.mistype = !(
+              this.words[this.counter][this.wordPosIndex].toLowerCase() ==
+              inputtedChar.toLowerCase()
+            );
+            if (!this.mistype) {
+              this.msg += inputtedChar;
+              this.wordPosIndex++;
+            }
+          }
         }
         if (e.keyCode === 32) {
           this.update();
@@ -68,6 +91,74 @@ export default {
   methods: {
     getSentence() {
       return allSentences[Math.floor(Math.random() * allSentences.length)];
+    },
+    clear() {
+      this.msg = null;
+    },
+    initialize() {
+      this.counter = 0;
+      while (this.sentenceStock.length < 5) {
+        let tempSentence = this.getSentence();
+        if (
+          tempSentence != this.sentenceStock[this.sentenceStock.length - 1] ||
+          this.sentenceStock.length == 0
+        ) {
+          this.sentenceStock.push(tempSentence);
+        }
+      }
+      this.sentence = this.sentenceStock.shift();
+      this.blurrySentences = this.sentenceStock.join("\n");
+      this.notYetTyped = this.sentence
+        .split(" ")
+        .splice(1, this.sentence.length)
+        .join(" ");
+      this.words = this.sentence.split(" ");
+      this.nextWord = "next:" + this.words[this.counter];
+      this.firstCycle = false;
+      this.msg = "";
+      this.typed = "";
+      this.update();
+      this.startTime = 0;
+      this.endTime = 0;
+      this.currentWord = this.sentence.split(" ")[0];
+    },
+    update() {
+      this.wordPosIndex = 0;
+      let words = this.sentence.split(" ");
+      if (this.startTime == 0) {
+        this.startTime = new Date().getTime();
+      }
+      if (
+        !this.firstCycle &&
+        this.msg.replace(/\s+/g, "").toLowerCase() ===
+          words[this.counter].toLowerCase()
+      ) {
+        this.nextWord = "next:" + words[this.counter + 1];
+        this.msg = this.msg.replace(/\s+/g, "");
+        this.typed += words[this.counter] + " ";
+        this.notYetTyped = this.notYetTyped
+          .split(" ")
+          .splice(1, this.sentence.split(" ").length)
+          .join(" ");
+        this.counter += 1;
+        this.currentWord = this.sentence.split(" ")[this.counter];
+        if (this.counter >= words.length) {
+          this.endTime = new Date().getTime();
+          words.length;
+          this.wpm = (
+            Math.round(
+              (words.length / ((this.endTime - this.startTime) * 1.66667e-5)) *
+                10
+            ) / 10
+          ).toFixed(1);
+          this.initialize();
+          this.counter = 0;
+        }
+      }
+      this.msg = "";
+      if (this.firstCycle) {
+        this.initialize();
+      }
     },
     rain() {
       const rain = new Audio(require("@/assets/sounds/rain.mp3"));
@@ -108,73 +199,7 @@ export default {
         audio6,
         audio7,
       ];
-
       audioList[Math.floor(Math.random() * 8)].play();
-    },
-    clear() {
-      this.msg = null;
-    },
-    initialize() {
-      this.counter = 0;
-      while (this.sentenceStock.length < 5) {
-        let tempSentence = this.getSentence();
-        console.log(tempSentence);
-        if (
-          tempSentence != this.sentenceStock[this.sentenceStock.length - 1] ||
-          this.sentenceStock.length == 0
-        ) {
-          this.sentenceStock.push(tempSentence);
-        }
-      }
-      this.sentence = this.sentenceStock.shift();
-      this.blurrySentences = this.sentenceStock.join("\n");
-      console.log(this.sentenceStock);
-      this.notYetTyped = this.sentence;
-      let words = this.sentence.split(" ");
-      this.nextWord = "next:" + words[this.counter];
-      this.firstCycle = false;
-      this.msg = "";
-      this.typed = "";
-      this.update();
-      this.notYetTyped = this.sentence;
-      this.startTime = 0;
-      this.endTime = 0;
-    },
-    update() {
-      let words = this.sentence.split(" ");
-      if (this.startTime == 0) {
-        this.startTime = new Date().getTime();
-      }
-      if (
-        !this.firstCycle &&
-        this.msg.replace(/\s+/g, "").toLowerCase() ===
-          words[this.counter].toLowerCase()
-      ) {
-        this.nextWord = "next:" + words[this.counter + 1];
-        this.msg = this.msg.replace(/\s+/g, "");
-        this.typed += words[this.counter] + " ";
-        this.notYetTyped = this.notYetTyped
-          .split(" ")
-          .splice(1, this.sentence.split(" ").length)
-          .join(" ");
-        this.counter += 1;
-        if (this.counter >= words.length) {
-          this.endTime = new Date().getTime();
-          words.length;
-          this.wpm = (
-            Math.round(
-              (words.length / ((this.endTime - this.startTime) * 1.66667e-5)) *
-                10
-            ) / 10
-          ).toFixed(1);
-          this.initialize();
-          this.counter = 0;
-        }
-      }
-      this.msg = "";
-      if (this.firstCycle) {
-        this.initialize();
-      }
     },
   },
 };
@@ -212,7 +237,7 @@ a {
   color: rgb(185, 185, 185);
 }
 .typed {
-  color: rgb(0, 0, 0);
+  color: rgb(90, 90, 90);
 }
 .notyet {
   /* color: rgb(202, 39, 39); */
@@ -224,5 +249,14 @@ a {
 .blurrySentences {
   color: transparent;
   text-shadow: 0 0 4px rgb(185, 185, 185);
+}
+.semiBlur {
+  /* color: transparent; */
+  text-shadow: 0 0 2px rgb(202, 202, 202);
+}
+.typing {
+  color: rgb(133, 169, 219);
+}
+.textCursor {
 }
 </style>
