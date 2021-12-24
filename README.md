@@ -1,24 +1,63 @@
-# typescript-app
+```CONCEPT~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//japanese typing gaming
 
-## Project setup
-```
-npm install
-```
+//aesthetic minimalist design
+//different color schemes
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+//features
+//wpm per paragraph then set to account
+//option to practice without affecting account
+//no time limit
+//paragraphs of japanese from ebook or plain text, or from webpage (extension?)
 
-### Compiles and minifies for production
-```
-npm run build
-```
+//if  you make a typo then the kana of how far you are in the word come up
+//eg) if you are typing 少年 and mistype E as R it will display しょうn
+//past text (done) will have furigana
+//input is pure romaji
+//accepts all possible ways to input char, ちょう could be chou, cyou
+//if you give up on that word, press enter to skip the word
 
-### Lints and fixes files
-```
-npm run lint
-```
+//records which buttons you are most likely to misinput
+//which words you don't know
+//which readings of which kanji you struggle with
+//which kanji in generel you fail a lot
+//list of successfully inputted words with frequency
+//stats of which words come up etc
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+//user accounts with user save data
+
+//database of saved and failed words in context
+//hover over word with mouse to save
+//export to anki
+//import from anki and rep sentences (able to sort by maturity, fails, due date etc)
+
+//optional rain sounds, white noise, keyboard sounds
+
+------------------------english support----------------------
+~~~~~~~MAJOR BUGS~~~~~~
+-handle symbols like , and .
+~~~~~~MINOR BUGS AND PLANNED FEATURES~~~~~~
+-volume up down and mute
+-reset sentence if alt-tab out
+-record incorrect keystrokes
+
+------------------------japanese support----------------------
+
+~~~~~~~MAJOR BUGS~~~~~~
+--fix nyo, nyu, nya input
+--handle ・  、and 。
+-- fix okurigana handling in json
+-- no input shown for また、
+--fix honsaku => ほんあく where as honnsaku => ほんさく
+
+~~~~~~MINOR BUGS AND PLANNED FEATURES~~~~~~
+--divide punctionation into its own index in json
+--stop update() from working during kana string
+--furigana over old words
+--gen json from migacc, remove \;(.*?)\]
+-save preppedJson into src without prompt
+--make sure that can take ruby from normal ebook formating
+--generate readings for kanji with no ruby provided, but keep provided ruby
+--switch to english mode for romaji
+
+```
