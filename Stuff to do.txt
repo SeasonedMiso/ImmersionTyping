@@ -33,8 +33,15 @@
 //optional rain sounds, white noise, keyboard sounds
 
 -----------------
--implement cpm
+-handle symbols like , and .
 -volume up down and mute
--handle ' being hotkey in firefox
--stop recording wpm if not active tab etc
+-reset sentence if alt-tab out
 -record incorrect keystrokes
+
+japanese support
+-create PreppedJson from unPrepped
+-Find a way to map readings to the kanji they are from (dictionary? 2d array?)
+------harder-------
+-generate readings for kanji with no ruby provided
+-make sure that can take ruby from normal ebook formating
+-switch to english mode for romaji

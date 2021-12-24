@@ -3,7 +3,9 @@
     <!-- <Navbar />
     <Runner />
     <Footer /> -->
-    <HelloWorld/>
+    <!-- <English/> -->
+    <!-- <Japanese /> -->
+    <sentencePrep />
     <!-- <font-awesome-icon icon="user-secret"/> -->
   </div>
 </template>
@@ -13,15 +15,18 @@
 // import Navbar from './components/Navbar.vue'
 // import Footer from './components/Footer.vue'
 
-
-import HelloWorld from './components/HelloWorld.vue'
+// import English from "./components/English.vue";
+// import Japanese from "./components/Japanese.vue";
+import SentencePrep from "./components/SentencePrep.vue";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    HelloWorld
-  }
-}
+    // English,
+    // Japanese,
+    SentencePrep,
+  },
+};
 </script>
 
 <style>

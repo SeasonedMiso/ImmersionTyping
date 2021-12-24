@@ -1,7 +1,7 @@
 <template>
   <div class="test-text">
     <p>
-      <span class="wpm">wpm: {{ wpm }}</span>
+      <span class="wpm">wpm: {{ wpm }} cpm: {{ cpm }}</span>
     </p>
     <span v-if="!firstCycle" class="sentence"
       ><span class="typed semiBlur">{{ typed }}</span
@@ -28,14 +28,14 @@
 
 <script lang="ts">
 import Vue from "vue";
-// const allSentences = require("../sentences.json");
-const allSentences = require("../slowsentences.json");
+const allSentences = require("../shortJapanese.json");
 const textCursors = ["|", " "];
+
 let acceptableChars = Array.from(new Array(26), (x, i) => i + 65)
   .concat(Array.from(new Array(9), (x, i) => i + 49))
-  .concat(40);
+  .concat(40, 188, 190);
 export default {
-  name: "HelloWorld",
+  name: "Japanese",
 
   data() {
     return {
@@ -80,7 +80,6 @@ export default {
               break;
           }
         }
-        console.log(String.fromCharCode(e.keyCode));
         if (this.typingSoundBool) {
           this.randomClick();
         }
@@ -90,7 +89,6 @@ export default {
           if (this.wordPosIndex > 0) this.wordPosIndex--;
         }
         //normal chars
-
         if (acceptableChars.includes(e.keyCode)) {
           let inputtedChar = String.fromCharCode(e.keyCode);
           this.addCharToMsg(inputtedChar);
@@ -182,6 +180,13 @@ export default {
           this.wpm = (
             Math.round(
               (words.length / ((this.endTime - this.startTime) * 1.66667e-5)) *
+                10
+            ) / 10
+          ).toFixed(1);
+          this.cpm = (
+            Math.round(
+              (words.toString().length /
+                ((this.endTime - this.startTime) * 1.66667e-5)) *
                 10
             ) / 10
           ).toFixed(1);
