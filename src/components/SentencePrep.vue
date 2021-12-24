@@ -6,7 +6,7 @@
 
 <script lang="ts">
 // import Vue from "vue";
-const content = require("../assets/json/shortJapanese.json");
+const content = require("../assets/json/jsonTest.json");
 
 export default {
   name: "SentencePrep",
@@ -25,7 +25,9 @@ export default {
           sentence: [],
           kana: [],
         });
+        console.log();
         let splitSentence = lines[i].split(" ");
+
         splitSentence = splitSentence.filter(function (el) {
           return el.length != 0;
         });
@@ -40,19 +42,35 @@ export default {
           let temp;
           if (splitSentence[word].includes("[")) {
             if (!/([一-龯])/.test(splitSentence[word])) {
-              temp = splitSentence[word].split("]")[0].split("[")[0];
+              if (splitSentence[word].includes("[")) {
+                temp = splitSentence[word].replace(/ *\[[^\]]*]/, "");
+                console.log(temp);
+              } else {
+                temp = splitSentence[word];
+              }
             } else {
-              temp = splitSentence[word].split("]")[0].split("[")[1];
+              if (!splitSentence[word].includes(",")) {
+                temp =
+                  splitSentence[word].split("[")[1].split("]")[0] +
+                  splitSentence[word].split("]")[1];
+              } else {
+                temp =
+                  splitSentence[word].split("[")[1].split(",")[0] +
+                  splitSentence[word].split("]")[1];
+              }
             }
-            temp = splitSentence[word].split("[")[1].split("]")[0];
+            console.log(splitSentence[word]);
+            console.log(temp);
             kanaSent += temp + ",";
           } else {
             kanaSent += splitSentence[word] + ",";
           }
         }
+
         kanaSent = kanaSent.slice(0, kanaSent.length - 1);
         let kana = kanaSent.split(",");
         console.log("kana: " + kana);
+        console.log("kanji: " + sentenceKanji);
 
         writeObject.sentences[i].kana = kana;
       }

@@ -51,6 +51,8 @@
 --fix honsaku => ほんあく where as honnsaku => ほんさく
 
 ~~~~~~MINOR BUGS AND PLANNED FEATURES~~~~~~
+--divide punctionation into its own index in json
+--stop update() from working during kana string
 --furigana over old words
 --gen json from migacc, remove \;(.*?)\]
 -save preppedJson into src without prompt
