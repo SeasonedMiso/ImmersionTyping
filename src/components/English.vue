@@ -28,9 +28,9 @@
 
 <script lang="ts">
 import Vue from "vue";
-const allSentences = require("../sentences.json");
-// const allSentences = require("../slowsentences.json");
-// const allSentences = require("../harrypotter.json");
+const allSentences = require("../assets/json/sentences.json");
+// const allSentences = require("../assets/json/slowsentences.json");
+// const allSentences = require("../assets/json/harrypotter.json");
 const textCursors = ["|", " "];
 let acceptableChars = Array.from(new Array(26), (x, i) => i + 65)
   .concat(Array.from(new Array(9), (x, i) => i + 49))
@@ -69,12 +69,6 @@ export default {
         if (e.ctrlKey || e.shiftKey || e.metaKey) {
           var c = e.which || e.keyCode; // get key code
           switch (c) {
-            case 83: //block Ctrl+S
-              e.preventDefault();
-              break;
-            case 82: //block Ctrl+R
-              e.preventDefault();
-              break;
             case 55: //block '
               e.preventDefault();
               this.addCharToMsg("'");

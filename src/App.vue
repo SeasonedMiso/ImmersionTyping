@@ -4,8 +4,8 @@
     <Runner />
     <Footer /> -->
     <!-- <English/> -->
-    <!-- <Japanese /> -->
-    <sentencePrep />
+    <Japanese />
+    <!-- <sentencePrep /> -->
     <!-- <font-awesome-icon icon="user-secret"/> -->
   </div>
 </template>
@@ -16,15 +16,15 @@
 // import Footer from './components/Footer.vue'
 
 // import English from "./components/English.vue";
-// import Japanese from "./components/Japanese.vue";
-import SentencePrep from "./components/SentencePrep.vue";
+import Japanese from "./components/Japanese.vue";
+// import SentencePrep from "./components/SentencePrep.vue";
 
 export default {
   name: "App",
   components: {
     // English,
-    // Japanese,
-    SentencePrep,
+    Japanese,
+    // SentencePrep,
   },
 };
 </script>

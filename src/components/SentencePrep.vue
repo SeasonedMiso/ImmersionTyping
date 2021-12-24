@@ -6,7 +6,7 @@
 
 <script lang="ts">
 // import Vue from "vue";
-const content = require("../shortJapanese.json");
+const content = require("../assets/json/shortJapanese.json");
 
 export default {
   name: "SentencePrep",
@@ -22,8 +22,8 @@ export default {
       let lines = content;
       for (var i in lines) {
         writeObject.sentences.push({
-          sentence: "",
-          kana: "",
+          sentence: [],
+          kana: [],
         });
         let splitSentence = lines[i].split(" ");
         splitSentence = splitSentence.filter(function (el) {
@@ -32,9 +32,7 @@ export default {
         let kanaSent = "";
 
         //Kanji sentence
-        let sentenceKanji = lines[i]
-          .replaceAll(/ *\[[^\]]*]/g, "")
-          .replaceAll(" ", "");
+        let sentenceKanji = lines[i].replaceAll(/ *\[[^\]]*]/g, "").split(" ");
         writeObject.sentences[i].sentence = sentenceKanji;
 
         //kana sentence
@@ -47,17 +45,29 @@ export default {
               temp = splitSentence[word].split("]")[0].split("[")[1];
             }
             temp = splitSentence[word].split("[")[1].split("]")[0];
-            kanaSent += temp;
+            kanaSent += temp + ",";
           } else {
-            kanaSent += splitSentence[word];
+            kanaSent += splitSentence[word] + ",";
           }
         }
-        console.log("kana: " + kanaSent);
-        writeObject.sentences[i].kana = kanaSent;
+        kanaSent = kanaSent.slice(0, kanaSent.length - 1);
+        let kana = kanaSent.split(",");
+        console.log("kana: " + kana);
+
+        writeObject.sentences[i].kana = kana;
       }
       console.log(writeObject);
       let json = JSON.stringify(writeObject);
       console.log(json);
+
+      function download(content, fileName, contentType) {
+        var a = document.createElement("a");
+        var file = new Blob([content], { type: contentType });
+        a.href = URL.createObjectURL(file);
+        a.download = fileName;
+        a.click();
+      }
+      download(json, "test.json", "text/plain");
     },
   },
 };

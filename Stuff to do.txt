@@ -1,3 +1,4 @@
+~~~~~~~~~~~~~~~~~~~~~~~CONCEPT~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //japanese typing gaming
 
 //aesthetic minimalist design
@@ -32,16 +33,28 @@
 
 //optional rain sounds, white noise, keyboard sounds
 
------------------
+------------------------english support----------------------
+~~~~~~~MAJOR BUGS~~~~~~
 -handle symbols like , and .
+~~~~~~MINOR BUGS AND PLANNED FEATURES~~~~~~
 -volume up down and mute
 -reset sentence if alt-tab out
 -record incorrect keystrokes
 
-japanese support
--create PreppedJson from unPrepped
--Find a way to map readings to the kanji they are from (dictionary? 2d array?)
-------harder-------
--generate readings for kanji with no ruby provided
--make sure that can take ruby from normal ebook formating
--switch to english mode for romaji
+------------------------japanese support----------------------
+
+~~~~~~~MAJOR BUGS~~~~~~
+--fix nyo, nyu, nya input
+--handle ・  、and 。
+-- fix okurigana handling in json
+-- no input shown for また、
+--fix honsaku => ほんあく where as honnsaku => ほんさく
+
+~~~~~~MINOR BUGS AND PLANNED FEATURES~~~~~~
+--furigana over old words
+--gen json from migacc, remove \;(.*?)\]
+-save preppedJson into src without prompt
+--make sure that can take ruby from normal ebook formating
+--generate readings for kanji with no ruby provided, but keep provided ruby
+--switch to english mode for romaji
+
