@@ -60,6 +60,8 @@ break vars that change into as many const variables as posisble
 -- fix okurigana handling in json
 -- no input shown for また、
 --fix honsaku => ほんあく where as honnsaku => ほんさく
+-katakana broken
+-remove wpm and seperate into cpm and kana/min
 
 ~~~~~~MINOR BUGS AND PLANNED FEATURES~~~~~~
 --refactor addCharToRawInput()

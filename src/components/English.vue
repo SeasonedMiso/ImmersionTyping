@@ -132,7 +132,7 @@ export default {
       while (this.sentenceStock.length < 5) {
         let tempSentence = this.getSentence();
         if (
-          tempSentence != this.sentenceStock[this.sentenceStock.length - 1] ||
+          tempSentence != this.sentenceStock.slice(-1)[0] ||
           this.sentenceStock.length == 0
         ) {
           this.sentenceStock.push(tempSentence);

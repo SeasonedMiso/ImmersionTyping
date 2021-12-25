@@ -252,8 +252,9 @@ export default {
       while (this.kanjiSentenceStock.length < 5) {
         this.getSentence();
         if (
-          this.kanjiSent != this.kanjiSentenceStock.slice(-1)[0] ||
-          this.kanjiSentenceStock.length === 0
+          JSON.stringify(this.kanjiSent) !=
+            JSON.stringify(this.kanjiSentenceStock.slice(-1)[0]) ||
+          this.kanjiSentenceStock.length == 0
         ) {
           this.kanjiSentenceStock.push(this.kanjiSent);
           this.kanaSentenceStock.push(this.kanaSent);

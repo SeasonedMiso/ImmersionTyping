@@ -5,7 +5,7 @@
     <Footer /> -->
     <!-- <English /> -->
     <Japanese />
-    <sentencePrep />
+    <!-- <sentencePrep /> -->
     <!-- <font-awesome-icon icon="user-secret"/> -->
   </div>
 </template>
@@ -17,14 +17,14 @@
 
 // import English from "./components/English.vue";
 import Japanese from "./components/Japanese.vue";
-import SentencePrep from "./components/SentencePrep.vue";
+// import SentencePrep from "./components/SentencePrep.vue";
 
 export default {
   name: "App",
   components: {
     // English,
     Japanese,
-    SentencePrep,
+    // SentencePrep,
   },
 };
 </script>
