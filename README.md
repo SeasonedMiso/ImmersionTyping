@@ -33,6 +33,7 @@ CONCEPT~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ^^^^^code format^^^^^
 change variable names to be readable, check for null vals and jsons etc
+switch statement key inputs
 neaten code
 break stuff into more functions
 more components
@@ -45,7 +46,7 @@ break vars that change into as many const variables as posisble
 ```MAJOR BUGS~~~~~~
 -handle symbols like , and .
 ~~~~~~MINOR BUGS AND PLANNED FEATURES~~~~~~
--volume up down and mute
+-switch statement inputs-volume up down and mute
 -reset sentence if alt-tab out
 -record incorrect keystrokes
 -test more browser hotkeys
@@ -61,6 +62,7 @@ break vars that change into as many const variables as posisble
 --fix honsaku => ほんあく where as honnsaku => ほんさく
 
 ~~~~~~MINOR BUGS AND PLANNED FEATURES~~~~~~
+--refactor addCharToRawInput()
 --divide punctionation into its own index in json
 --stop update() from working during kana string
 --furigana over old words

@@ -6,16 +6,16 @@
       >
     </p>
 
-    <span v-if="!firstCycle" class="sentence"
-      ><span class="typed semiBlur">{{ typed }}</span
+    <span v-if="!firstCycleBool" class="sentence"
+      ><span class="typedChars semiBlur">{{ typedChars }}</span
       ><span class="currentWordStart typing">{{
-        currentWord.substring(0, wordPosIndex)
+        currentWord.substring(0, letterPositionIndex)
       }}</span>
       <span class="textCursor" content="tempCont"
-        ><span v-if="mistype" style="color: red">{{ textCursor }}</span
+        ><span v-if="mistypeBool" style="color: red">{{ textCursor }}</span
         ><span v-else style="color: black">{{ textCursor }}</span></span
       ><span class="currentWordEnd"
-        >{{ currentWord.substring(wordPosIndex, currentWord.length) }}
+        >{{ currentWord.substring(letterPositionIndex, currentWord.length) }}
       </span>
       <span class="notYetTyped">{{ notYetTyped }}</span>
 
@@ -26,12 +26,12 @@
     </span>
     <br />
 
-    <p v-if="firstCycle">press space to start</p>
+    <p v-if="firstCycleBool">press space to start</p>
   </div>
 </template>
 
 <script lang="ts">
-import Vue from "vue";
+// import Vue from "vue";
 const allSentences = require("../assets/json/sentences.json");
 // const allSentences = require("../assets/json/slowsentences.json");
 // const allSentences = require("../assets/json/harrypotter.json");
@@ -45,23 +45,22 @@ export default {
   name: "English",
   data() {
     return {
-      msg: "",
-      typed: "",
+      rawInput: "",
+      typedChars: "",
       notYetTyped: "",
       sentence: "",
       blurrySentences: "",
-      onScreen: "",
       currentWord: "",
-      words: "",
-      wordPosIndex: 0,
+      splitSentence: "",
+      letterPositionIndex: 0,
       mistypeCounter: 0,
       startTime: 0,
       endTime: 0,
-      counter: 0,
+      wordPositionIndex: 0,
       wpm: 0,
       cpm: 0,
-      firstCycle: true,
-      mistype: false,
+      firstCycleBool: true,
+      mistypeBool: false,
       typingSoundBool: false,
       sentenceStock: [],
       textCursor: textCursors[0],
@@ -77,7 +76,7 @@ export default {
           switch (c) {
             case 55: //block '
               e.preventDefault();
-              this.addCharToMsg("'");
+              this.addCharToRawInput("'");
               break;
           }
         }
@@ -86,53 +85,50 @@ export default {
         }
         //backspace
         if (e.keyCode == 8) {
-          this.msg = this.msg.slice(0, -1);
-          if (this.wordPosIndex > 0) this.wordPosIndex--;
+          this.rawInput = this.rawInput.slice(0, -1);
+          if (this.letterPositionIndex > 0) this.letterPositionIndex--;
         }
         //normal chars
+
+        // && !this.mistypeBool???
         if (acceptableChars.includes(e.keyCode)) {
           let inputtedChar = String.fromCharCode(e.keyCode);
-          this.addCharToMsg(inputtedChar);
+          this.addCharToRawInput(inputtedChar);
         }
         //space
         if (e.keyCode === 32) {
-          this.update();
+          this.spaceBarPress();
         }
       }.bind(this)
     );
   },
 
   methods: {
-    addCharToMsg(inputtedChar) {
-      if (this.wordPosIndex < this.words[this.counter].length) {
-        this.mistype = !(
-          this.words[this.counter][this.wordPosIndex].toLowerCase() ==
-          inputtedChar.toLowerCase()
+    addCharToRawInput(inputtedChar) {
+      if (
+        this.letterPositionIndex <
+        this.splitSentence[this.wordPositionIndex].length
+      ) {
+        this.mistypeBool = !(
+          this.splitSentence[this.wordPositionIndex][
+            this.letterPositionIndex
+          ].toLowerCase() == inputtedChar.toLowerCase()
         );
-        if (!this.mistype) {
-          this.msg += inputtedChar;
-          this.wordPosIndex++;
-        } else {
-          this.mistypeCounter++;
+        //nested if
+        if (!this.mistypeBool) {
+          this.rawInput += inputtedChar;
+          this.letterPositionIndex++;
+          return null;
         }
+        this.mistypeCounter++;
       }
     },
+
     getSentence() {
       return allSentences[Math.floor(Math.random() * allSentences.length)];
     },
 
-    clear() {
-      this.msg = null;
-    },
-
-    initialize() {
-      this.counter = 0;
-      this.msg = "";
-      this.typed = "";
-      this.startTime = 0;
-      this.endTime = 0;
-      this.firstCycle = false;
-
+    populateSentenceStock() {
       while (this.sentenceStock.length < 5) {
         let tempSentence = this.getSentence();
         if (
@@ -142,66 +138,77 @@ export default {
           this.sentenceStock.push(tempSentence);
         }
       }
+    },
+
+    initialize() {
+      this.wordPositionIndex, this.startTime, (this.endTime = 0);
+      this.rawInput, (this.typedChars = "");
+      this.firstCycleBool = false;
+
+      this.populateSentenceStock();
       this.sentence = this.sentenceStock.shift();
       this.blurrySentences = this.sentenceStock.join("\n");
       this.notYetTyped = this.sentence
         .split(" ")
         .splice(1, this.sentence.length)
         .join(" ");
-      this.words = this.sentence.split(" ");
+      this.splitSentence = this.sentence.split(" ");
       this.currentWord = this.sentence.split(" ")[0];
     },
 
-    update() {
-      //init
-      let words = this.sentence.split(" ");
-
+    spaceBarPress() {
+      let splitSentence = this.sentence.split(" ");
       if (this.startTime == 0) {
         this.startTime = new Date().getTime();
       }
-
       if (
-        !this.firstCycle &&
-        this.msg.replace(/\s+/g, "").toLowerCase() ===
-          words[this.counter].toLowerCase()
+        !this.firstCycleBool &&
+        this.rawInput.replace(/\s+/g, "").toLowerCase() ===
+          splitSentence[this.wordPositionIndex].toLowerCase()
       ) {
-        this.wordPosIndex = 0;
-        this.msg = this.msg.replace(/\s+/g, "");
-        this.typed += words[this.counter] + " ";
-        this.notYetTyped = this.notYetTyped
-          .split(" ")
-          .splice(1, this.sentence.split(" ").length)
-          .join(" ");
-
-        this.counter += 1;
-        this.currentWord = this.sentence.split(" ")[this.counter];
-
-        //reach end of sentence
-        if (this.counter >= words.length) {
-          this.endTime = new Date().getTime();
-          words.length;
-          this.wpm = (
-            Math.round(
-              (words.length / ((this.endTime - this.startTime) * 1.66667e-5)) *
-                10
-            ) / 10
-          ).toFixed(1);
-          this.cpm = (
-            Math.round(
-              (words.toString().length /
-                ((this.endTime - this.startTime) * 1.66667e-5)) *
-                10
-            ) / 10
-          ).toFixed(1);
-          this.initialize();
-          this.counter = 0;
-        }
-        this.msg = "";
+        this.nextWord(splitSentence);
       }
-
-      if (this.firstCycle) {
+      if (this.firstCycleBool) {
         this.initialize();
       }
+    },
+
+    nextWord(splitSentence) {
+      this.letterPositionIndex = 0;
+      this.rawInput = this.rawInput.replace(/\s+/g, "");
+      this.typedChars += splitSentence[this.wordPositionIndex] + " ";
+      this.notYetTyped = this.notYetTyped
+        .split(" ")
+        .splice(1, this.sentence.split(" ").length)
+        .join(" ");
+
+      this.wordPositionIndex++;
+      this.currentWord = this.sentence.split(" ")[this.wordPositionIndex];
+
+      if (this.wordPositionIndex >= splitSentence.length) {
+        this.nextSentence(splitSentence);
+      }
+      this.rawInput = "";
+    },
+
+    nextSentence(splitSentence) {
+      this.endTime = new Date().getTime();
+      splitSentence.length;
+      this.wpm = (
+        Math.round(
+          (splitSentence.length /
+            ((this.endTime - this.startTime) * 1.66667e-5)) *
+            10
+        ) / 10
+      ).toFixed(1);
+      this.cpm = (
+        Math.round(
+          (splitSentence.toString().length /
+            ((this.endTime - this.startTime) * 1.66667e-5)) *
+            10
+        ) / 10
+      ).toFixed(1);
+      this.initialize();
     },
 
     rain() {
@@ -248,16 +255,6 @@ export default {
     },
   },
 };
-
-Vue.component("button-counter", {
-  data: function () {
-    return {
-      count: 0,
-    };
-  },
-  template:
-    '<button v-on:click="count++">You clicked me {{ count }} times.</button>',
-});
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
@@ -281,12 +278,9 @@ a {
   font-size: 150%;
   color: rgb(185, 185, 185);
 }
-.typed {
+.typedChars {
   color: rgb(90, 90, 90);
 }
-/* .notyet {
-  color: rgb(202, 39, 39);
-} */
 .button {
   font-family: "Font Awesome 5 Free", sans-serif;
   font-weight: 900; /* Needed for font awesome to work... */
@@ -296,7 +290,6 @@ a {
   text-shadow: 0 0 4px rgb(185, 185, 185);
 }
 .semiBlur {
-  /* color: transparent; */
   text-shadow: 0 0 2px rgb(202, 202, 202);
 }
 .typing {

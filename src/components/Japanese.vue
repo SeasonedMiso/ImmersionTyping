@@ -1,26 +1,26 @@
 <template>
   <div class="test-text">
     <p>
-      <span class="wpm">wpm: {{ wpm }} cpm: {{ cpm }}</span>
+      <span class="wpm"
+        >wpm: {{ wpm }} cpm: {{ cpm }} mistypes: {{ mistypeCounter }}</span
+      >
     </p>
-    <span v-if="!firstCycle" class="sentence"
-      ><span class="typed semiBlur">{{ typed }}</span>
-      <span class="currentWordStart typing">{{
-        currentWord.substring(0, wordPosIndex)
+    <span v-if="!firstCycleBool" class="sentence"
+      ><span class="typedChars semiBlur">{{ typedChars }}</span
+      ><span class="currentWordStart typing">{{
+        currentWord.substring(0, letterPositionIndex)
       }}</span>
       <span class="textCursor" content="tempCont"
-        ><span v-if="mistype" style="color: red">{{ textCursor }}</span
+        ><span v-if="mistypeBool" style="color: red">{{ textCursor }}</span
         ><span v-else style="color: black">{{ textCursor }}</span></span
       >
-
       <span class="currentWordEnd"
         ><ruby
-          >{{ currentWord.substring(wordPosIndex, currentWord.length) }}
-          <rp>(</rp><rt class="typing">{{ ruby }}{{ remainderChars }} </rt
+          >{{ currentWord.substring(letterPositionIndex, currentWord.length) }}
+          <rp>(</rp><rt class="typing">{{ ruby }}{{ remainingRomajiInput }} </rt
           ><rp>)</rp></ruby
         ></span
       >
-
       <span class="notYetTyped">{{ notYetTyped }}</span>
       <br />
       <span class="blurrySentences" style="white-space: pre">{{
@@ -29,7 +29,7 @@
     </span>
 
     <br />
-    <p v-if="firstCycle">press space to start</p>
+    <p v-if="firstCycleBool">press space to start</p>
   </div>
 </template>
 
@@ -48,31 +48,31 @@ export default {
 
   data() {
     return {
-      typingSoundBool: false,
-      msg: "",
-      typed: "",
+      rawInput: "",
+      typedChars: "",
       notYetTyped: "",
       sentence: "",
-      kanjiSentenceStock: [],
-      kanaSentenceStock: [],
       blurrySentences: "",
-      kanaSent: [],
-      kanjiSent: [],
-      onScreen: "",
       currentWord: "",
-      remainderChars: "",
+      splitSentence: "",
+      remainingRomajiInput: "",
       ruby: "",
-      wordPosIndex: 0,
-      mistype: false,
-      kanaValid: false,
-      words: "",
-      textCursor: textCursors[0],
+      letterPositionIndex: 0,
+      mistypeCounter: 0,
       startTime: 0,
       endTime: 0,
-      counter: 0,
-      firstCycle: true,
+      wordPositionIndex: 0,
       wpm: 0,
       cpm: 0,
+      firstCycleBool: true,
+      mistypeBool: false,
+      typingSoundBool: false,
+      kanaValid: false,
+      kanjiSentenceStock: [],
+      kanaSentenceStock: [],
+      kanaSent: [],
+      kanjiSent: [],
+      textCursor: textCursors[0],
     };
   },
 
@@ -85,7 +85,7 @@ export default {
           switch (c) {
             case 55: //block '
               e.preventDefault();
-              this.addCharToMsg("'");
+              this.addCharToRawInput("'");
               break;
           }
         }
@@ -93,118 +93,108 @@ export default {
           this.randomClick();
         }
         //backspace
-        if (e.keyCode == 8) {
-          if (this.msg != "") {
-            this.msg = this.msg.slice(0, -1);
-            this.remainderChars = this.remainderChars.slice(0, -1);
+        if (e.keyCode === 8) {
+          //refactor if else
+          if (this.rawInput != "") {
+            this.rawInput = this.rawInput.slice(0, -1);
+            this.remainingRomajiInput = this.remainingRomajiInput.slice(0, -1);
           } else {
             this.ruby = this.ruby.slice(0, -1);
-            if (this.mistype) {
-              this.mistype = false;
-            }
+            this.mistypeBool = false;
           }
         }
         //normal chars
-        if (acceptableChars.includes(e.keyCode) && !this.mistype) {
+        if (acceptableChars.includes(e.keyCode) && !this.mistypeBool) {
           let inputtedChar = String.fromCharCode(e.keyCode);
-          this.addCharToMsg(inputtedChar);
+          this.addCharToRawInput(inputtedChar);
         }
-
         //space or enter
         if (e.keyCode === 32 || e.keyCode === 13) {
-          this.update();
+          this.spaceBarPress();
         }
       }.bind(this)
     );
   },
 
   methods: {
-    validateFuri() {
+    addCharToRawInput(inputtedChar) {
+      //TODO: refactor all this mess
       if (
-        this.kanaSent[this.counter].substr(-1) == "ん" &&
-        this.remainderChars == "n"
+        this.letterPositionIndex < this.kanaSent[this.wordPositionIndex].length
       ) {
-        return this.ruby == this.kanaSent[this.counter].slice(0, -1);
-      }
-      return this.ruby == this.kanaSent[this.counter];
-    },
-    validateReading(kana) {
-      if (kana.length == 1) {
-        if (this.kanaSent[this.counter][this.wordPosIndex] == kana) {
-          this.wordPosIndex += 1;
-          this.msg = "";
-          this.remainder = "";
-          this.ruby = "";
-        }
-        if (
-          this.kanaSent[this.counter][this.wordPosIndex] != kana &&
-          this.ruby.length > 0
-        ) {
-          this.mistype = true;
-
-          this.msg = "";
-        }
-        if (this.wordPosIndex == this.kanaSent[this.counter].length) {
-          this.validKana = true;
-          this.update();
-        }
-      }
-      console.log(this.validKana);
-    },
-    addCharToMsg(inputtedChar) {
-      if (this.wordPosIndex < this.kanaSent[this.counter].length) {
-        if (/^([ぁ-んァ-ン]*)$/.test(this.kanjiSent[this.counter])) {
-          this.msg += inputtedChar;
+        //refactor nested if
+        if (/^([ぁ-んァ-ン]*)$/.test(this.kanjiSent[this.wordPositionIndex])) {
+          this.rawInput += inputtedChar;
+          //refactor double nested if
           if (inputtedChar.toLowerCase() != "n") {
-            this.ruby += wanakana.toHiragana(this.msg).replace(/[a-z]/g, "");
-            this.remainderChars = wanakana
-              .toHiragana(this.msg)
+            this.ruby += wanakana
+              .toHiragana(this.rawInput)
+              .replace(/[a-z]/g, "");
+            this.remainingRomajiInput = wanakana
+              .toHiragana(this.rawInput)
               .replace(/[ぁ-んァ-ン]/g, "");
             console.log(inputtedChar);
+            //refactor double nested if and else if chain
             if (this.ruby.length > 0) {
-              this.validateReading(this.ruby[0]);
+              this.validateKana(this.ruby[0]);
               console.log(inputtedChar);
             }
           } else if (
-            this.msg.length <= 1 &&
-            inputtedChar.toLowerCase() == "n"
+            this.rawInput.length <= 1 &&
+            inputtedChar.toLowerCase() === "n"
           ) {
-            this.remainderChars += "n";
-          } else if (this.msg.length > 1 && this.msg[0].toLowerCase() == "n") {
-            this.msg = this.msg.slice(0, -1);
-            this.ruby += wanakana.toHiragana(this.msg).replace(/[a-z]/g, "");
-            this.msg = "";
-            this.remainderChars = "";
-            this.validateReading(this.ruby[0]);
+            this.remainingRomajiInput += "n";
+          } else if (
+            this.rawInput.length > 1 &&
+            this.rawInput[0].toLowerCase() === "n"
+          ) {
+            this.rawInput = this.rawInput.slice(0, -1);
+            this.ruby += wanakana
+              .toHiragana(this.rawInput)
+              .replace(/[a-z]/g, "");
+            this.rawInput = "";
+            this.remainingRomajiInput = "";
+            this.validateKana(this.ruby[0]);
           }
         }
+        //refactor else if
         //if kanji let user type whole word, then space or enter validate word to move cursor
-        else if (/^([[一-龯]*)$/.test(this.kanjiSent[this.counter])) {
-          this.msg += inputtedChar;
+        else if (/^([[一-龯]*)$/.test(this.kanjiSent[this.wordPositionIndex])) {
+          this.rawInput += inputtedChar;
+          //refactor nested if
           if (inputtedChar.toLowerCase() != "n") {
-            let a = this.ruby.length;
-            this.ruby += wanakana.toHiragana(this.msg).replace(/[a-z]/g, "");
-            this.remainderChars = wanakana
-              .toHiragana(this.msg)
+            let firstRubyLength = this.ruby.length;
+            this.ruby += wanakana
+              .toHiragana(this.rawInput)
+              .replace(/[a-z]/g, "");
+            this.remainingRomajiInput = wanakana
+              .toHiragana(this.rawInput)
               .replace(/[ぁ-んァ-ン]/g, "");
-            let b = this.ruby.length;
-            if (b - a > 0) {
-              this.msg = "";
+            //refactor nested if
+            if (this.ruby.length - firstRubyLength > 0) {
+              this.rawInput = "";
             }
+            //refactor nested else if chain
           } else if (
-            this.msg.length <= 1 &&
-            inputtedChar.toLowerCase() == "n"
+            this.rawInput.length <= 1 &&
+            inputtedChar.toLowerCase() === "n"
           ) {
-            this.remainderChars += "n";
-          } else if (this.msg.length > 1 && this.msg[0].toLowerCase() == "n") {
-            this.msg = this.msg.slice(0, -1);
-            this.remainderChars = "";
-            this.ruby += wanakana.toHiragana(this.msg).replace(/[a-z]/g, "");
-            this.msg = "";
+            this.remainingRomajiInput += "n";
+          } else if (
+            this.rawInput.length > 1 &&
+            this.rawInput[0].toLowerCase() === "n"
+          ) {
+            this.rawInput = this.rawInput.slice(0, -1);
+            this.remainingRomajiInput = "";
+            this.ruby += wanakana
+              .toHiragana(this.rawInput)
+              .replace(/[a-z]/g, "");
+            this.rawInput = "";
           }
         }
       }
     },
+
     getSentence() {
       let tempSentObj =
         allSentences[Math.floor(Math.random() * allSentences.length)];
@@ -212,24 +202,58 @@ export default {
       this.kanjiSent = tempSentObj.sentence.map((x) => x);
     },
 
-    clear() {
-      this.msg = null;
+    validateRuby() {
+      if (
+        this.kanaSent[this.wordPositionIndex].substr(-1) === "ん" &&
+        this.remainingRomajiInput === "n"
+      ) {
+        return this.ruby === this.kanaSent[this.wordPositionIndex].slice(0, -1);
+      }
+      if (this.ruby === this.kanaSent[this.wordPositionIndex]) {
+        return true;
+      }
+      return false;
+    },
+    validateKana(kana) {
+      //dont like that validateRuby has no in, but reading does
+      if (kana.length != 1) {
+        return null;
+      }
+      if (
+        this.kanaSent[this.wordPositionIndex][this.letterPositionIndex] === kana
+      ) {
+        this.letterPositionIndex++;
+        this.rawInput = this.ruby = this.remainder = "";
+      }
+      if (
+        this.kanaSent[this.wordPositionIndex][this.letterPositionIndex] !=
+          kana &&
+        this.ruby.length > 0
+      ) {
+        this.mistypeBool = true;
+        this.mistypeCounter++;
+        this.rawInput = "";
+      }
+      if (
+        this.letterPositionIndex ===
+        this.kanaSent[this.wordPositionIndex].length
+      ) {
+        this.validKana = true;
+        this.spaceBarPress();
+      }
     },
 
+    populateSentenceStock() {},
     initialize() {
-      this.counter = 0;
-      this.msg = "";
-      this.typed = "";
-      this.startTime = 0;
-      this.endTime = 0;
-      this.firstCycle = false;
+      this.wordPositionIndex = this.startTime = this.endTime = 0;
+      this.rawInput = this.typedChars = "";
+      this.firstCycleBool = false;
 
       while (this.kanjiSentenceStock.length < 5) {
         this.getSentence();
         if (
-          this.kanjiSent !=
-            this.kanjiSentenceStock[this.kanjiSentenceStock.length - 1] ||
-          this.kanjiSentenceStock.length == 0
+          this.kanjiSent != this.kanjiSentenceStock.slice(-1)[0] ||
+          this.kanjiSentenceStock.length === 0
         ) {
           this.kanjiSentenceStock.push(this.kanjiSent);
           this.kanaSentenceStock.push(this.kanaSent);
@@ -242,59 +266,55 @@ export default {
         .replaceAll(",", "");
       let tempSent = this.kanjiSent.map((x) => x);
       this.notYetTyped = tempSent.splice(1, tempSent.length).join(" ");
-      this.words = this.kanjiSent;
+      this.splitSentence = this.kanjiSent;
       this.currentWord = this.kanjiSent[0];
     },
 
-    update() {
-      //init
-      this.wordPosIndex = 0;
-      if (this.startTime == 0) {
+    spaceBarPress() {
+      this.letterPositionIndex = 0;
+      if (this.startTime === 0) {
         this.startTime = new Date().getTime();
       }
-      if (!this.firstCycle) {
-        if (this.validateFuri() || this.validKana) {
-          this.msg = this.msg.replace(/\s+/g, "");
-          this.typed += this.kanjiSent[this.counter] + " ";
-          this.notYetTyped = this.notYetTyped
-            .split(" ")
-            .splice(1, this.kanjiSent.length)
-            .join(" ");
-
-          this.counter += 1;
-          this.currentWord = this.kanjiSent[this.counter];
-
-          //reach end of sentence
-          if (this.counter >= this.kanjiSent.length) {
-            this.endTime = new Date().getTime();
-            this.kanjiSent.length;
-            this.wpm = (
-              Math.round(
-                (this.kanjiSent.length /
-                  ((this.endTime - this.startTime) * 1.66667e-5)) *
-                  10
-              ) / 10
-            ).toFixed(1);
-            this.cpm = (
-              Math.round(
-                (this.kanjiSent.toString().length /
-                  ((this.endTime - this.startTime) * 1.66667e-5)) *
-                  10
-              ) / 10
-            ).toFixed(1);
-            this.initialize();
-            this.counter = 0;
-          }
+      //refactor
+      if (!this.firstCycleBool) {
+        if (this.validateRuby() || this.validKana) {
+          this.nextWord();
+        } else {
+          this.mistypeCounter++;
         }
       }
-      this.ruby = "";
-      this.msg = "";
-      this.remainderChars = "";
-      this.validKana = false;
-      this.mistype = false;
-      if (this.firstCycle) {
+      this.ruby = this.rawInput = this.remainingRomajiInput = "";
+      this.validKana = this.mistypeBool = false;
+      if (this.firstCycleBool) {
         this.initialize();
       }
+    },
+
+    nextWord() {
+      this.rawInput = this.rawInput.replace(/\s+/g, "");
+      this.typedChars += this.kanjiSent[this.wordPositionIndex] + " ";
+      this.notYetTyped = this.notYetTyped
+        .split(" ")
+        .splice(1, this.kanjiSent.length)
+        .join(" ");
+
+      this.wordPositionIndex++;
+      this.currentWord = this.kanjiSent[this.wordPositionIndex];
+      if (this.wordPositionIndex >= this.kanjiSent.length) {
+        this.nextSentence();
+      }
+    },
+
+    nextSentence() {
+      this.endTime = new Date().getTime();
+      let timeElapsed = (this.endTime - this.startTime) * 1.66667e-5;
+      this.wpm = (
+        Math.round((this.kanjiSent.length / timeElapsed) * 10) / 10
+      ).toFixed(1);
+      this.cpm = (
+        Math.round((this.kanjiSent.toString().length / timeElapsed) * 10) / 10
+      ).toFixed(1);
+      this.initialize();
     },
 
     rain() {
@@ -364,12 +384,9 @@ a {
   font-size: 150%;
   color: rgb(185, 185, 185);
 }
-.typed {
+.typedChars {
   color: rgb(90, 90, 90);
 }
-/* .notyet {
-  color: rgb(202, 39, 39);
-} */
 .button {
   font-family: "Font Awesome 5 Free", sans-serif;
   font-weight: 900; /* Needed for font awesome to work... */
@@ -379,7 +396,6 @@ a {
   text-shadow: 0 0 4px rgb(185, 185, 185);
 }
 .semiBlur {
-  /* color: transparent; */
   text-shadow: 0 0 2px rgb(202, 202, 202);
 }
 .typing {
