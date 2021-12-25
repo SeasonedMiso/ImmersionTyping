@@ -1,8 +1,11 @@
 <template>
   <div class="test-text">
     <p>
-      <span class="wpm">wpm: {{ wpm }} cpm: {{ cpm }}</span>
+      <span class="wpm"
+        >wpm: {{ wpm }} cpm: {{ cpm }} mistypes: {{ mistypeCounter }}</span
+      >
     </p>
+
     <span v-if="!firstCycle" class="sentence"
       ><span class="typed semiBlur">{{ typed }}</span
       ><span class="currentWordStart typing">{{
@@ -15,13 +18,14 @@
         >{{ currentWord.substring(wordPosIndex, currentWord.length) }}
       </span>
       <span class="notYetTyped">{{ notYetTyped }}</span>
+
       <br />
       <span class="blurrySentences" style="white-space: pre">{{
         blurrySentences
       }}</span>
     </span>
-
     <br />
+
     <p v-if="firstCycle">press space to start</p>
   </div>
 </template>
@@ -31,34 +35,36 @@ import Vue from "vue";
 const allSentences = require("../assets/json/sentences.json");
 // const allSentences = require("../assets/json/slowsentences.json");
 // const allSentences = require("../assets/json/harrypotter.json");
+
 const textCursors = ["|", " "];
 let acceptableChars = Array.from(new Array(26), (x, i) => i + 65)
   .concat(Array.from(new Array(9), (x, i) => i + 49))
   .concat(40, 188, 190);
+
 export default {
   name: "English",
-
   data() {
     return {
-      typingSoundBool: false,
       msg: "",
       typed: "",
       notYetTyped: "",
       sentence: "",
-      sentenceStock: [],
       blurrySentences: "",
       onScreen: "",
       currentWord: "",
-      wordPosIndex: 0,
-      mistype: false,
       words: "",
-      textCursor: textCursors[0],
+      wordPosIndex: 0,
+      mistypeCounter: 0,
       startTime: 0,
       endTime: 0,
       counter: 0,
-      firstCycle: true,
       wpm: 0,
       cpm: 0,
+      firstCycle: true,
+      mistype: false,
+      typingSoundBool: false,
+      sentenceStock: [],
+      textCursor: textCursors[0],
     };
   },
 
@@ -106,6 +112,8 @@ export default {
         if (!this.mistype) {
           this.msg += inputtedChar;
           this.wordPosIndex++;
+        } else {
+          this.mistypeCounter++;
         }
       }
     },
@@ -146,7 +154,6 @@ export default {
 
     update() {
       //init
-      this.wordPosIndex = 0;
       let words = this.sentence.split(" ");
 
       if (this.startTime == 0) {
@@ -158,6 +165,7 @@ export default {
         this.msg.replace(/\s+/g, "").toLowerCase() ===
           words[this.counter].toLowerCase()
       ) {
+        this.wordPosIndex = 0;
         this.msg = this.msg.replace(/\s+/g, "");
         this.typed += words[this.counter] + " ";
         this.notYetTyped = this.notYetTyped
@@ -188,9 +196,9 @@ export default {
           this.initialize();
           this.counter = 0;
         }
+        this.msg = "";
       }
 
-      this.msg = "";
       if (this.firstCycle) {
         this.initialize();
       }

@@ -1,4 +1,4 @@
-```CONCEPT~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CONCEPT~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //japanese typing gaming
 
 //aesthetic minimalist design
@@ -10,8 +10,6 @@
 //no time limit
 //paragraphs of japanese from ebook or plain text, or from webpage (extension?)
 
-//if  you make a typo then the kana of how far you are in the word come up
-//eg) if you are typing 少年 and mistype E as R it will display しょうn
 //past text (done) will have furigana
 //input is pure romaji
 //accepts all possible ways to input char, ちょう could be chou, cyou
@@ -33,13 +31,25 @@
 
 //optional rain sounds, white noise, keyboard sounds
 
+^^^^^code format^^^^^
+change variable names to be readable, check for null vals and jsons etc
+neaten code
+break stuff into more functions
+more components
+get rid of nested if statements
+get rid of else statements
+break vars that change into as many const variables as posisble
+
 ------------------------english support----------------------
-~~~~~~~MAJOR BUGS~~~~~~
+
+```MAJOR BUGS~~~~~~
 -handle symbols like , and .
 ~~~~~~MINOR BUGS AND PLANNED FEATURES~~~~~~
 -volume up down and mute
 -reset sentence if alt-tab out
 -record incorrect keystrokes
+-test more browser hotkeys
+-allow hotkeys before game has started, esc to exit game and enable hotkeys
 
 ------------------------japanese support----------------------
 
@@ -59,5 +69,6 @@
 --make sure that can take ruby from normal ebook formating
 --generate readings for kanji with no ruby provided, but keep provided ruby
 --switch to english mode for romaji
+
 
 ```
