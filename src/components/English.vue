@@ -39,7 +39,7 @@ const allSentences = require("../assets/json/sentences.json");
 const textCursors = ["|", " "];
 let acceptableChars = Array.from(new Array(26), (x, i) => i + 65)
   .concat(Array.from(new Array(9), (x, i) => i + 49))
-  .concat(40, 188, 190);
+  .concat(40, 49, 50, 55, 58, 59, 188, 190, 191);
 
 export default {
   name: "English",
@@ -109,6 +109,12 @@ export default {
         this.letterPositionIndex <
         this.splitSentence[this.wordPositionIndex].length
       ) {
+        console.log(
+          inputtedChar.toLowerCase(),
+          this.splitSentence[this.wordPositionIndex][
+            this.letterPositionIndex
+          ].toLowerCase()
+        );
         this.mistypeBool = !(
           this.splitSentence[this.wordPositionIndex][
             this.letterPositionIndex
@@ -141,8 +147,8 @@ export default {
     },
 
     initialize() {
-      this.wordPositionIndex, this.startTime, (this.endTime = 0);
-      this.rawInput, (this.typedChars = "");
+      this.wordPositionIndex = this.startTime = this.endTime = 0;
+      this.rawInput = this.typedChars = "";
       this.firstCycleBool = false;
 
       this.populateSentenceStock();

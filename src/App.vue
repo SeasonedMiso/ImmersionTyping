@@ -3,8 +3,8 @@
     <!-- <Navbar />
     <Runner />
     <Footer /> -->
-    <!-- <English /> -->
-    <Japanese />
+    <English />
+    <!-- <Japanese /> -->
     <!-- <sentencePrep /> -->
     <!-- <font-awesome-icon icon="user-secret"/> -->
   </div>
@@ -15,15 +15,15 @@
 // import Navbar from './components/Navbar.vue'
 // import Footer from './components/Footer.vue'
 
-// import English from "./components/English.vue";
-import Japanese from "./components/Japanese.vue";
+import English from "./components/English.vue";
+// import Japanese from "./components/Japanese.vue";
 // import SentencePrep from "./components/SentencePrep.vue";
 
 export default {
   name: "App",
   components: {
-    // English,
-    Japanese,
+    English,
+    // Japanese,
     // SentencePrep,
   },
 };

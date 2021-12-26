@@ -1,4 +1,4 @@
-CONCEPT~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```CONCEPT~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //japanese typing gaming
 
 //aesthetic minimalist design
@@ -41,38 +41,46 @@ get rid of nested if statements
 get rid of else statements
 break vars that change into as many const variables as posisble
 
-------------------------english support----------------------
+---
 
-```MAJOR BUGS~~~~~~
--handle symbols like , and .
-~~~~~~MINOR BUGS AND PLANNED FEATURES~~~~~~
--switch statement inputs-volume up down and mute
+-implement last sentence blurred above current sentence
+
+------------------------english support----------------------
+MAJOR BUGS~~~~~~
+-handle symbols like , and . (comma returns ¼)
+
+~~~~~~MINOR BUGS~~~~~~
+-switch statement inputs
+-test more browser hotkeys
+
+~~~~~~PLANNED FEATURES~~~~~~
+--volume up down and mute
 -reset sentence if alt-tab out
 -record incorrect keystrokes
--test more browser hotkeys
 -allow hotkeys before game has started, esc to exit game and enable hotkeys
-
 ------------------------japanese support----------------------
 
 ~~~~~~~MAJOR BUGS~~~~~~
 --fix nyo, nyu, nya input
 --handle ・  、and 。
--- fix okurigana handling in json
 -- no input shown for また、
+-- fix okurigana handling in json
 --fix honsaku => ほんあく where as honnsaku => ほんさく
--katakana broken
--remove wpm and seperate into cpm and kana/min
+-- ー(katakana lengthener) broken
+-- remove wpm and seperate into cpm and kana/min
 
-~~~~~~MINOR BUGS AND PLANNED FEATURES~~~~~~
+~~~~~~MINOR BUGS~~~~~~
+-make backspace on ruby add to mistype
 --refactor addCharToRawInput()
 --divide punctionation into its own index in json
---stop update() from working during kana string
---furigana over old words
+--stop pushSpace() from reseting word during kana string
 --gen json from migacc, remove \;(.*?)\]
--save preppedJson into src without prompt
---make sure that can take ruby from normal ebook formating
 --generate readings for kanji with no ruby provided, but keep provided ruby
+
+~~~~~~PLANNED FEATURES~~~~~~
+-overhall mistype functionallity to color chars that have been mistyped
+--furigana over old words]
+--save preppedJson into src without prompt
+--make sure that can take ruby from normal ebook formating
 --switch to english mode for romaji
-
-
 ```

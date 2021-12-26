@@ -2,7 +2,10 @@
   <div class="test-text">
     <p>
       <span class="wpm"
-        >wpm: {{ wpm }} cpm: {{ cpm }} mistypes: {{ mistypeCounter }}</span
+        >Kana/Min:
+        <span class="statPoint"> {{ kanaPerMin }} </span>Character/Min:
+        <span class="statPoint"> {{ cpm }} </span>Mistypes:
+        <span class="statPoint"> {{ mistypeCounter }} </span></span
       >
     </p>
     <span v-if="!firstCycleBool" class="sentence"
@@ -62,7 +65,7 @@ export default {
       startTime: 0,
       endTime: 0,
       wordPositionIndex: 0,
-      wpm: 0,
+      kanaPerMin: 0,
       cpm: 0,
       firstCycleBool: true,
       mistypeBool: false,
@@ -77,6 +80,7 @@ export default {
   },
 
   mounted() {
+    //keyHandler
     window.addEventListener(
       "keydown",
       function (e) {
@@ -214,25 +218,31 @@ export default {
       }
       return false;
     },
+
     validateKana(kana) {
       //dont like that validateRuby has no in, but reading does
       if (kana.length != 1) {
         return null;
       }
       if (
-        this.kanaSent[this.wordPositionIndex][this.letterPositionIndex] === kana
+        wanakana.toHiragana(
+          this.kanaSent[this.wordPositionIndex][this.letterPositionIndex]
+        ) === kana
       ) {
         this.letterPositionIndex++;
         this.rawInput = this.ruby = this.remainder = "";
       }
       if (
-        this.kanaSent[this.wordPositionIndex][this.letterPositionIndex] !=
-          kana &&
+        wanakana.toHiragana(
+          this.kanaSent[this.wordPositionIndex][this.letterPositionIndex]
+        ) != kana &&
         this.ruby.length > 0
       ) {
         this.mistypeBool = true;
         this.mistypeCounter++;
-        this.rawInput = "";
+        this.rawInput = this.ruby = "";
+        //TODO: make it so mistype doesnt prevent typing, but goes away on keypress
+        this.mistypeBool = false;
       }
       if (
         this.letterPositionIndex ===
@@ -243,12 +253,7 @@ export default {
       }
     },
 
-    populateSentenceStock() {},
-    initialize() {
-      this.wordPositionIndex = this.startTime = this.endTime = 0;
-      this.rawInput = this.typedChars = "";
-      this.firstCycleBool = false;
-
+    populateSentenceStock() {
       while (this.kanjiSentenceStock.length < 5) {
         this.getSentence();
         if (
@@ -260,6 +265,13 @@ export default {
           this.kanaSentenceStock.push(this.kanaSent);
         }
       }
+    },
+
+    initialize() {
+      this.wordPositionIndex = this.startTime = this.endTime = 0;
+      this.rawInput = this.typedChars = "";
+      this.firstCycleBool = false;
+      this.populateSentenceStock();
       this.kanjiSent = this.kanjiSentenceStock.shift();
       this.kanaSent = this.kanaSentenceStock.shift();
       this.blurrySentences = this.kanjiSentenceStock
@@ -309,12 +321,21 @@ export default {
     nextSentence() {
       this.endTime = new Date().getTime();
       let timeElapsed = (this.endTime - this.startTime) * 1.66667e-5;
-      this.wpm = (
-        Math.round((this.kanjiSent.length / timeElapsed) * 10) / 10
-      ).toFixed(1);
+
       this.cpm = (
-        Math.round((this.kanjiSent.toString().length / timeElapsed) * 10) / 10
+        Math.round(
+          (this.kanjiSent.toString().replaceAll(",", "").length / timeElapsed) *
+            10
+        ) / 10
       ).toFixed(1);
+
+      this.kanaPerMin = (
+        Math.round(
+          (this.kanaSent.toString().replaceAll(",", "").length / timeElapsed) *
+            10
+        ) / 10
+      ).toFixed(1);
+
       this.initialize();
     },
 
@@ -400,6 +421,9 @@ a {
   text-shadow: 0 0 2px rgb(202, 202, 202);
 }
 .typing {
+  color: rgb(133, 169, 219);
+}
+.statPoint {
   color: rgb(133, 169, 219);
 }
 /* .textCursor {
