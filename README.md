@@ -44,22 +44,28 @@ break vars that change into as many const variables as posisble
 ---
 
 -implement last sentence blurred above current sentence
+accuracy calculation
 
 ------------------------english support----------------------
 MAJOR BUGS~~~~~~
 -handle symbols like , and . (comma returns ¼)
 
 ~~~~~~MINOR BUGS~~~~~~
+-make map between keycode and ascii codes
 -switch statement inputs
 -test more browser hotkeys
+-change wpm algorithm
+[gross wpm = ((alltypedchars)/5)/timeinmin]
+[grosswpm - uncorrectederrors/time]
+only errors left uncorrected are penalized
 
 ~~~~~~PLANNED FEATURES~~~~~~
 --volume up down and mute
 -reset sentence if alt-tab out
 -record incorrect keystrokes
 -allow hotkeys before game has started, esc to exit game and enable hotkeys
-------------------------japanese support----------------------
 
+------------------------japanese support----------------------
 ~~~~~~~MAJOR BUGS~~~~~~
 --fix nyo, nyu, nya input
 --handle ・  、and 。
@@ -83,4 +89,8 @@ MAJOR BUGS~~~~~~
 --save preppedJson into src without prompt
 --make sure that can take ruby from normal ebook formating
 --switch to english mode for romaji
+
+reggie advice:
+if "if statement" spans whole function then reverse logic to eliminate indent
+english: change sentence etc to be arrays, not strings
 ```

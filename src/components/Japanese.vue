@@ -121,84 +121,85 @@ export default {
   },
 
   methods: {
+    isKanji(word) {
+      if (/^([[一-龯]*)$/.test(word)) {
+        return true;
+      }
+      return false;
+    },
     addCharToRawInput(inputtedChar) {
-      //TODO: refactor all this mess
-      if (
-        this.letterPositionIndex < this.kanaSent[this.wordPositionIndex].length
-      ) {
-        //refactor nested if
-        if (/^([ぁ-んァ-ン]*)$/.test(this.kanjiSent[this.wordPositionIndex])) {
+      this.currentWord = this.kanjiSent[this.wordPositionIndex];
+      if (this.letterPositionIndex < this.currentWord.length) {
+        if (wanakana.isKana(this.currentWord)) {
           this.rawInput += inputtedChar;
-          //refactor double nested if
           if (inputtedChar.toLowerCase() != "n") {
-            this.ruby += wanakana
-              .toHiragana(this.rawInput)
-              .replace(/[a-z]/g, "");
-            this.remainingRomajiInput = wanakana
-              .toHiragana(this.rawInput)
-              .replace(/[ぁ-んァ-ン]/g, "");
-            console.log(inputtedChar);
-            //refactor double nested if and else if chain
-            if (this.ruby.length > 0) {
-              this.validateKana(this.ruby[0]);
-              console.log(inputtedChar);
-            }
-          } else if (
-            this.rawInput.length <= 1 &&
-            inputtedChar.toLowerCase() === "n"
-          ) {
-            this.remainingRomajiInput += "n";
-          } else if (
-            this.rawInput.length > 1 &&
-            this.rawInput[0].toLowerCase() === "n"
-          ) {
-            this.rawInput = this.rawInput.slice(0, -1);
-            this.ruby += wanakana
-              .toHiragana(this.rawInput)
-              .replace(/[a-z]/g, "");
-            this.rawInput = "";
-            this.remainingRomajiInput = "";
-            this.validateKana(this.ruby[0]);
+            this.kanaNotN(inputtedChar);
+          } else {
+            this.kanaN(inputtedChar);
           }
+          return;
         }
-        //refactor else if
-        //if kanji let user type whole word, then space or enter validate word to move cursor
-        else if (/^([[一-龯]*)$/.test(this.kanjiSent[this.wordPositionIndex])) {
+
+        if (this.isKanji(this.currentWord)) {
           this.rawInput += inputtedChar;
-          //refactor nested if
           if (inputtedChar.toLowerCase() != "n") {
-            let firstRubyLength = this.ruby.length;
-            this.ruby += wanakana
-              .toHiragana(this.rawInput)
-              .replace(/[a-z]/g, "");
-            this.remainingRomajiInput = wanakana
-              .toHiragana(this.rawInput)
-              .replace(/[ぁ-んァ-ン]/g, "");
-            //refactor nested if
-            if (this.ruby.length - firstRubyLength > 0) {
-              this.rawInput = "";
-            }
-            //refactor nested else if chain
-          } else if (
-            this.rawInput.length <= 1 &&
-            inputtedChar.toLowerCase() === "n"
-          ) {
-            this.remainingRomajiInput += "n";
-          } else if (
-            this.rawInput.length > 1 &&
-            this.rawInput[0].toLowerCase() === "n"
-          ) {
-            this.rawInput = this.rawInput.slice(0, -1);
-            this.remainingRomajiInput = "";
-            this.ruby += wanakana
-              .toHiragana(this.rawInput)
-              .replace(/[a-z]/g, "");
-            this.rawInput = "";
+            this.kanjiNotN();
           }
+          this.kanjiN(inputtedChar);
         }
       }
     },
-
+    kanaNotN(inputtedChar) {
+      this.ruby += wanakana.toHiragana(this.rawInput).replace(/[a-z]/g, "");
+      this.remainingRomajiInput = wanakana
+        .toHiragana(this.rawInput)
+        .replace(/[ぁ-んァ-ン]/g, "");
+      console.log(inputtedChar);
+      if (this.ruby.length > 0) {
+        this.validateKana(this.ruby[0]);
+        console.log(inputtedChar);
+      }
+    },
+    kanaN(inputtedChar) {
+      if (this.rawInput.length <= 1 && inputtedChar.toLowerCase() === "n") {
+        this.remainingRomajiInput += "n";
+      } else if (
+        this.rawInput.length > 1 &&
+        this.rawInput[0].toLowerCase() === "n"
+      ) {
+        this.rawInput = this.rawInput.slice(0, -1);
+        // slightly diff to kanji
+        this.ruby += wanakana.toHiragana(this.rawInput).replace(/[a-z]/g, "");
+        this.rawInput = "";
+        this.remainingRomajiInput = "";
+        this.validateKana(this.ruby[0]);
+      }
+    },
+    kanjiNotN() {
+      let firstRubyLength = this.ruby.length;
+      this.ruby += wanakana.toHiragana(this.rawInput).replace(/[a-z]/g, "");
+      this.remainingRomajiInput = wanakana
+        .toHiragana(this.rawInput)
+        .replace(/[ぁ-んァ-ン]/g, "");
+      //refactor nested if
+      if (this.ruby.length - firstRubyLength > 0) {
+        this.rawInput = "";
+      }
+    },
+    kanjiN(inputtedChar) {
+      if (this.rawInput.length <= 1 && inputtedChar.toLowerCase() === "n") {
+        this.remainingRomajiInput += "n";
+      } else if (
+        this.rawInput.length > 1 &&
+        this.rawInput[0].toLowerCase() === "n"
+      ) {
+        this.rawInput = this.rawInput.slice(0, -1);
+        // slightly diff to kana
+        this.remainingRomajiInput = "";
+        this.ruby += wanakana.toHiragana(this.rawInput).replace(/[a-z]/g, "");
+        this.rawInput = "";
+      }
+    },
     getSentence() {
       let tempSentObj =
         allSentences[Math.floor(Math.random() * allSentences.length)];
@@ -320,7 +321,7 @@ export default {
 
     nextSentence() {
       this.endTime = new Date().getTime();
-      let timeElapsed = (this.endTime - this.startTime) * 1.66667e-5;
+      const timeElapsed = (this.endTime - this.startTime) * 1.66667e-5;
 
       this.cpm = (
         Math.round(

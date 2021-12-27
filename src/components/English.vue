@@ -30,13 +30,16 @@
   </div>
 </template>
 
-<script lang="ts">
+<script>
 // import Vue from "vue";
+import keycode from "keycode";
 const allSentences = require("../assets/json/sentences.json");
 // const allSentences = require("../assets/json/slowsentences.json");
 // const allSentences = require("../assets/json/harrypotter.json");
 
 const textCursors = ["|", " "];
+
+// add alphabet, nums, then special chars
 let acceptableChars = Array.from(new Array(26), (x, i) => i + 65)
   .concat(Array.from(new Array(9), (x, i) => i + 49))
   .concat(40, 49, 50, 55, 58, 59, 188, 190, 191);
@@ -70,34 +73,32 @@ export default {
   mounted() {
     window.addEventListener(
       "keydown",
-      function (e) {
-        if (e.ctrlKey || e.shiftKey || e.metaKey) {
-          var c = e.which || e.keyCode; // get key code
-          switch (c) {
+      function (event) {
+        if (event.ctrlKey || event.shiftKey || event.metaKey) {
+          const char = event.which || event.keyCode; // get key code
+          // kill browser hotkeys
+          switch (char) {
             case 55: //block '
-              e.preventDefault();
+              event.preventDefault();
               this.addCharToRawInput("'");
               break;
           }
         }
-        if (this.typingSoundBool) {
-          this.randomClick();
-        }
-        //backspace
-        if (e.keyCode == 8) {
+        if (keycode.isEventKey(event, "backspace")) {
           this.rawInput = this.rawInput.slice(0, -1);
           if (this.letterPositionIndex > 0) this.letterPositionIndex--;
         }
-        //normal chars
-
-        // && !this.mistypeBool???
-        if (acceptableChars.includes(e.keyCode)) {
-          let inputtedChar = String.fromCharCode(e.keyCode);
+        if (keycode.isEventKey(event, "space")) {
+          this.spaceBarPress();
+        }
+        // normal chars
+        if (acceptableChars.includes(event.keyCode)) {
+          let inputtedChar = keycode(event.keyCode);
           this.addCharToRawInput(inputtedChar);
         }
-        //space
-        if (e.keyCode === 32) {
-          this.spaceBarPress();
+
+        if (this.typingSoundBool) {
+          this.randomClick();
         }
       }.bind(this)
     );
@@ -106,28 +107,28 @@ export default {
   methods: {
     addCharToRawInput(inputtedChar) {
       if (
-        this.letterPositionIndex <
+        this.letterPositionIndex >=
         this.splitSentence[this.wordPositionIndex].length
       ) {
-        console.log(
-          inputtedChar.toLowerCase(),
-          this.splitSentence[this.wordPositionIndex][
-            this.letterPositionIndex
-          ].toLowerCase()
-        );
-        this.mistypeBool = !(
-          this.splitSentence[this.wordPositionIndex][
-            this.letterPositionIndex
-          ].toLowerCase() == inputtedChar.toLowerCase()
-        );
-        //nested if
-        if (!this.mistypeBool) {
-          this.rawInput += inputtedChar;
-          this.letterPositionIndex++;
-          return null;
-        }
-        this.mistypeCounter++;
+        return;
       }
+      console.log(
+        inputtedChar.toLowerCase(),
+        this.splitSentence[this.wordPositionIndex][
+          this.letterPositionIndex
+        ].toLowerCase()
+      );
+      this.mistypeBool = !(
+        this.splitSentence[this.wordPositionIndex][
+          this.letterPositionIndex
+        ].toLowerCase() == inputtedChar.toLowerCase()
+      );
+      if (!this.mistypeBool) {
+        this.rawInput += inputtedChar;
+        this.letterPositionIndex++;
+        return null;
+      }
+      this.mistypeCounter++;
     },
 
     getSentence() {
@@ -138,8 +139,8 @@ export default {
       while (this.sentenceStock.length < 5) {
         let tempSentence = this.getSentence();
         if (
-          tempSentence != this.sentenceStock.slice(-1)[0] ||
-          this.sentenceStock.length == 0
+          tempSentence !== this.sentenceStock.slice(-1)[0] ||
+          this.sentenceStock.length === 0
         ) {
           this.sentenceStock.push(tempSentence);
         }
@@ -163,17 +164,22 @@ export default {
     },
 
     spaceBarPress() {
-      let splitSentence = this.sentence.split(" ");
-      if (this.startTime == 0) {
+      const splitSentence = this.sentence.split(" ");
+      this.currentWord = splitSentence[this.wordPositionIndex];
+
+      if (this.startTime === 0) {
         this.startTime = new Date().getTime();
       }
+
+      const lowerCaseRawIn = this.rawInput.replace(/\s+/g, "").toLowerCase();
+
       if (
         !this.firstCycleBool &&
-        this.rawInput.replace(/\s+/g, "").toLowerCase() ===
-          splitSentence[this.wordPositionIndex].toLowerCase()
+        lowerCaseRawIn === this.currentWord.toLowerCase()
       ) {
         this.nextWord(splitSentence);
       }
+
       if (this.firstCycleBool) {
         this.initialize();
       }
@@ -189,8 +195,7 @@ export default {
         .join(" ");
 
       this.wordPositionIndex++;
-      this.currentWord = this.sentence.split(" ")[this.wordPositionIndex];
-
+      this.currentWord = splitSentence[this.wordPositionIndex];
       if (this.wordPositionIndex >= splitSentence.length) {
         this.nextSentence(splitSentence);
       }
@@ -199,21 +204,16 @@ export default {
 
     nextSentence(splitSentence) {
       this.endTime = new Date().getTime();
-      splitSentence.length;
-      this.wpm = (
-        Math.round(
-          (splitSentence.length /
-            ((this.endTime - this.startTime) * 1.66667e-5)) *
-            10
-        ) / 10
-      ).toFixed(1);
-      this.cpm = (
-        Math.round(
-          (splitSentence.toString().length /
-            ((this.endTime - this.startTime) * 1.66667e-5)) *
-            10
-        ) / 10
-      ).toFixed(1);
+      const timeElapsed = (this.endTime - this.startTime) * 1.66667e-5;
+
+      const preRoundWpm = Math.round((splitSentence.length / timeElapsed) * 10);
+      const preRoundCpm = Math.round(
+        (splitSentence.toString().length / timeElapsed) * 10
+      );
+
+      this.wpm = (preRoundWpm / 10).toFixed(1);
+      this.cpm = (preRoundCpm / 10).toFixed(1);
+
       this.initialize();
     },
 
