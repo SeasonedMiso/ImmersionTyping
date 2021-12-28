@@ -67,13 +67,11 @@ only errors left uncorrected are penalized
 
 ------------------------japanese support----------------------
 ~~~~~~~MAJOR BUGS~~~~~~
---fix nyo, nyu, nya input
 --handle ・  、and 。
 -- no input shown for また、
 -- fix okurigana handling in json
---fix honsaku => ほんあく where as honnsaku => ほんさく
+-- fix romaji + nnno
 -- ー(katakana lengthener) broken
--- remove wpm and seperate into cpm and kana/min
 
 ~~~~~~MINOR BUGS~~~~~~
 -make backspace on ruby add to mistype
