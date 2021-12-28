@@ -69,7 +69,6 @@ export default {
       textCursor: textCursors[0],
     };
   },
-
   mounted() {
     window.addEventListener(
       "keydown",

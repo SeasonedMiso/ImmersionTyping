@@ -40,12 +40,16 @@
 // import Vue from "vue";
 
 import * as wanakana from "wanakana";
-const allSentences = require("../assets/json/defaultJP.json").sentences;
+import keycode from "keycode";
+const allSentences = require("../assets/json/test.json").sentences;
 const textCursors = ["|", " "];
 
-let acceptableChars = Array.from(new Array(26), (x, i) => i + 65)
-  .concat(Array.from(new Array(9), (x, i) => i + 49))
-  .concat(40, 188, 190);
+const normalChars = Array.from(new Array(26), (x, i) => i + 65).concat(
+  Array.from(new Array(9), (x, i) => i + 49)
+  // .concat([173])
+);
+// const specialChars = [40, 49, 50, 55, 58, 59, 173, 188, 190, 191];
+const specialChars = [188, 190, 191];
 export default {
   name: "Japanese",
 
@@ -83,29 +87,38 @@ export default {
     //keyHandler
     window.addEventListener(
       "keydown",
-      function (e) {
-        if (e.ctrlKey || e.shiftKey || e.metaKey) {
-          var c = e.which || e.keyCode; // get key code
-          switch (c) {
-            case 55: //block '
-              e.preventDefault();
-              this.addCharToRawInput("'");
-              break;
-          }
+      function (event) {
+        // if (event.ctrlKey || event.shiftKey || event.metaKey) {
+        //   const char = event.which || event.keyCode; // get key code
+        //   switch (char) {
+        //     case 55: //block '
+        //       event.preventDefault();
+        //       this.addCharToRawInput("'");
+        //       break;
+        //   }
+        // }
+        if (keycode.isEventKey(event, 55)) {
+          event.preventDefault();
+          this.addCharToRawInput("'");
         }
-        if (this.typingSoundBool) {
-          this.randomClick();
+        if (keycode.isEventKey(event, 191)) {
+          event.preventDefault();
+          // this.addCharToRawInput("/");
         }
         if (this.firstCycleBool) {
           //space or enter
-          if (e.keyCode === 32 || e.keyCode === 13) {
+          if (
+            keycode.isEventKey(event, "space") ||
+            keycode.isEventKey(event, "enter")
+          ) {
             this.spaceBarPress();
           }
           return;
         }
         if (!this.firstCycleBool) {
+          let inputtedChar;
           //backspace
-          if (e.keyCode === 8) {
+          if (keycode.isEventKey(event, "backspace")) {
             //refactor if else
             if (this.rawInput != "") {
               this.rawInput = this.rawInput.slice(0, -1);
@@ -129,16 +142,27 @@ export default {
             this.mistypeCounter += 1;
             this.mistypeBool = false;
           }
+          if (keycode.isEventKey(event, 173)) {
+            inputtedChar = "-";
+            this.addCharToRawInput(inputtedChar);
+            return;
+          }
           //normal chars
-          if (acceptableChars.includes(e.keyCode) && !this.mistypeBool) {
-            let inputtedChar = String.fromCharCode(e.keyCode);
+          if (normalChars.includes(event.keyCode) && !this.mistypeBool) {
+            let inputtedChar = String.fromCharCode(event.keyCode);
             this.addCharToRawInput(inputtedChar);
           }
+          if (specialChars.includes(event.keyCode) && !this.mistypeBool) {
+            inputtedChar = keycode(event.keyCode);
+            this.addCharToRawInput(inputtedChar);
+          }
+        }
+        if (this.typingSoundBool) {
+          this.randomClick();
         }
       }.bind(this)
     );
   },
-
   methods: {
     isKanji(word) {
       if (/^([[一-龯]*)$/.test(word)) {
@@ -146,45 +170,103 @@ export default {
       }
       return false;
     },
+    isAllKanji(word) {
+      if (/^([[一-龯]*)$/.test(word)) {
+        return true;
+      }
+      return false;
+    },
     addCharToRawInput(inputtedChar) {
+      this.rawInput += inputtedChar;
       this.currentWord = this.kanjiSent[this.wordPositionIndex];
       if (this.letterPositionIndex >= this.currentWord.length) {
         return;
       }
       if (wanakana.isKana(this.currentWord)) {
-        this.rawInput += inputtedChar;
-        if (inputtedChar.toLowerCase() !== "n") {
+        if (inputtedChar !== "N") {
           this.inputKanaNotN(inputtedChar);
-        } else {
-          this.inputKanaN(inputtedChar);
+          return;
+        }
+        this.inputKanaN(inputtedChar);
+        return;
+      }
+      if (inputtedChar !== "N") {
+        this.inputKanjiNotN();
+        return;
+      }
+      this.inputKanjiN(inputtedChar);
+      return;
+    },
+    // inputKanaNotN() {
+    //   console.log("kana");
+    //   let initialRubyLength = this.ruby.length;
+
+    //   this.ruby += wanakana.toHiragana(this.rawInput).replace(/[a-z]/g, "");
+    //   this.remainingRomajiInput = wanakana
+    //     .toHiragana(this.rawInput)
+    //     .replace(/[ぁ-んァ-ン]/g, "");
+    //   if (this.ruby.length > initialRubyLength) {
+    //     this.validateKana(this.ruby[0]);
+    //     this.remainingRomajiInput = "";
+    //   }
+    // },
+
+    inputKanaNotN() {
+      let firstRubyLength = this.ruby.length;
+      if (
+        this.remainingRomajiInput[this.remainingRomajiInput.length - 1] === "Y"
+      ) {
+        console.log("after y");
+        this.remainingRomajiInput += this.rawInput;
+
+        this.ruby += wanakana
+          .toHiragana(this.remainingRomajiInput)
+          .replace(/[a-z]/g, "");
+        this;
+        this.remainingRomajiInput = "";
+        this.rawInput = "";
+        return;
+      }
+      if (
+        this.remainingRomajiInput[this.remainingRomajiInput.length - 1] === "N"
+      ) {
+        console.log("after n");
+        if (this.rawInput == "Y") {
+          console.log("y detected");
+          this.remainingRomajiInput += this.rawInput;
+          this.rawInput = "";
+          return;
+        }
+        this.ruby += wanakana
+          .toHiragana(this.remainingRomajiInput + this.rawInput)
+          .replace(/[a-z]/g, "");
+        if (this.remainingRomajiInput === "N") {
+          this.remainingRomajiInput = "";
+        }
+        this.remainingRomajiInput += this.rawInput;
+        this.rawInput = "";
+        if (
+          this.ruby.length - firstRubyLength > 0 &&
+          this.ruby[this.ruby.length - 1] !== "ん"
+        ) {
+          this.isRubyComplete();
+          this.remainingRomajiInput = "";
         }
         return;
       }
-      if (this.isKanji(this.currentWord)) {
-        this.rawInput += inputtedChar;
-        if (inputtedChar.toLowerCase() !== "n") {
-          this.inputKanjiNotN();
-          return;
-        }
-        this.inputKanjiN(inputtedChar);
-      }
-    },
-    inputKanaNotN() {
       this.ruby += wanakana.toHiragana(this.rawInput).replace(/[a-z]/g, "");
       this.remainingRomajiInput = wanakana
         .toHiragana(this.rawInput)
         .replace(/[ぁ-んァ-ン]/g, "");
-      if (this.ruby.length > 0) {
+      if (this.ruby.length > firstRubyLength) {
         this.validateKana(this.ruby[0]);
+        this.remainingRomajiInput = "";
       }
     },
     inputKanaN(inputtedChar) {
-      if (this.rawInput.length <= 1 && inputtedChar.toLowerCase() === "n") {
+      if (this.rawInput.length <= 1 && inputtedChar === "N") {
         this.remainingRomajiInput += "n";
-      } else if (
-        this.rawInput.length > 1 &&
-        this.rawInput[0].toLowerCase() === "n"
-      ) {
+      } else if (this.rawInput.length > 1 && this.rawInput[0] === "N") {
         this.rawInput = this.rawInput.slice(0, -1);
         this.ruby += wanakana.toHiragana(this.rawInput).replace(/[a-z]/g, "");
         this.rawInput = "";
@@ -194,7 +276,6 @@ export default {
     },
     inputKanjiNotN() {
       let firstRubyLength = this.ruby.length;
-
       if (
         this.remainingRomajiInput[this.remainingRomajiInput.length - 1] === "Y"
       ) {
@@ -216,7 +297,6 @@ export default {
           this.rawInput = "";
           return;
         }
-
         this.ruby += wanakana
           .toHiragana(this.remainingRomajiInput + this.rawInput)
           .replace(/[a-z]/g, "");
@@ -229,6 +309,7 @@ export default {
           this.ruby.length - firstRubyLength > 0 &&
           this.ruby[this.ruby.length - 1] !== "ん"
         ) {
+          this.isRubyComplete();
           this.remainingRomajiInput = "";
         }
         return;
@@ -247,13 +328,12 @@ export default {
       ) {
         this.remainingRomajiInput = "";
       }
-
       this.isRubyComplete();
     },
     inputKanjiN(inputtedChar) {
       if (
         this.remainingRomajiInput.length >= 1 &&
-        this.remainingRomajiInput[0].toLowerCase() === "n"
+        this.remainingRomajiInput[0] === "N"
       ) {
         this.ruby += wanakana
           .toHiragana(this.remainingRomajiInput)
@@ -261,21 +341,20 @@ export default {
         this.remainingRomajiInput = "";
         this.rawInput = "";
         this.isRubyComplete();
-      } else if (
-        this.remainingRomajiInput.length < 1 &&
-        inputtedChar.toLowerCase() === "n"
-      ) {
+      } else if (this.remainingRomajiInput.length < 1 && inputtedChar === "N") {
         this.remainingRomajiInput += "N";
         this.rawInput = "";
       } else if (
         this.remainingRomajiInput.length >= 1 &&
-        this.rawInput[this.rawInput.length - 1].toLowerCase() == "n"
+        this.rawInput[this.rawInput.length - 1] == "N"
       ) {
         this.remainingRomajiInput += "N";
       }
     },
     isRubyComplete() {
+      console.log(this.ruby, this.kanaSent[this.wordPositionIndex]);
       if (this.ruby === this.kanaSent[this.wordPositionIndex]) {
+        console.log("eee");
         this.spaceBarPress();
       }
     },
@@ -308,7 +387,7 @@ export default {
         ) === kana
       ) {
         this.letterPositionIndex++;
-        this.rawInput = this.ruby = this.remainder = "";
+        this.rawInput = this.ruby = this.remaining = "";
       }
       if (
         wanakana.toHiragana(

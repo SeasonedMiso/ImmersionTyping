@@ -67,17 +67,16 @@ only errors left uncorrected are penalized
 
 ------------------------japanese support----------------------
 ~~~~~~~MAJOR BUGS~~~~~~
---handle ・  、and 。
--- no input shown for また、
--- fix okurigana handling in json
+--right now, inputOtherChar(), takes verbs, compund nouns with mixed kana and kanji, symbols like commas, mixes of special and kana. This means that its broken and doesn't really know how to deal with n, and that it floats ruby on top even for kana in
+--make it so if kana word has n like ランキング that when you press g of gu, keeps g in remainingRomajiInput
+--for kana word fix nya, nyo, nyu
+--add space back in just for words to end in n
 -- fix romaji + nnno
--- ー(katakana lengthener) broken
+-- add word type to json
 
 ~~~~~~MINOR BUGS~~~~~~
--make backspace on ruby add to mistype
---refactor addCharToRawInput()
+--refactor inputKanjiNotN()
 --divide punctionation into its own index in json
---stop pushSpace() from reseting word during kana string
 --gen json from migacc, remove \;(.*?)\]
 --generate readings for kanji with no ruby provided, but keep provided ruby
 
@@ -87,7 +86,6 @@ only errors left uncorrected are penalized
 --save preppedJson into src without prompt
 --make sure that can take ruby from normal ebook formating
 --switch to english mode for romaji
-
 reggie advice:
 if "if statement" spans whole function then reverse logic to eliminate indent
 english: change sentence etc to be arrays, not strings

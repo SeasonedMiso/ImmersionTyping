@@ -6,7 +6,7 @@
 
 <script lang="ts">
 // import Vue from "vue";
-const content = require("../assets/json/jsonTest.json");
+const content = require("../assets/json/PrepreppedJapaneseCopyright.json");
 
 export default {
   name: "SentencePrep",
